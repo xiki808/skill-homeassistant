@@ -13,15 +13,6 @@ import json
 __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
 
-
-def strTobool(v):
-    """ Converts String to boolean representation
-        From https://stackoverflow.com/questions/715417/
-        converting-from-a-string-to-boolean-in-python/715468#715468
-    """
-    return v.lower() in ("yes", "true", "t", "1")
-
-
 class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
@@ -524,3 +515,4 @@ class HomeAssistantSkill(MycroftSkill):
 
 def create_skill():
     return HomeAssistantSkill()
+
