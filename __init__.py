@@ -126,8 +126,8 @@ class HomeAssistantSkill(MycroftSkill):
                     self.settings.get('host'),
                     self.settings.get('password'),
                     int(self.settings.get('portnum')),
-                    strTobool(self.settings.get('ssl')),
-                    strTobool(self.settings.get('verify'))
+                    self.settings.get('ssl') == 'true',
+                    self.settings.get('verify') == 'true'
                     )
         else:
             self.ha = None
