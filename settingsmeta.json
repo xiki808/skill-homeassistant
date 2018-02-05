@@ -9,7 +9,7 @@
                   {
                       "name": "host",
                       "type": "text",
-                      "label": "host",
+                      "label": "Host adress",
                       "value": ""
                   },
                   {
@@ -21,13 +21,19 @@
                   {
                       "name": "portnum",
                       "type": "Number",
-                      "label": "portnum",
+                      "label": "Port number",
                       "value": ""
                   },
                   {
                       "name": "ssl",
                       "type": "text",
-                      "label": "ssl",
+                      "label": "Use SSL",
+                      "value": ""
+                  },
+                  {
+                      "name": "verify",
+                      "type": "text",
+                      "label": "Verify SSL certficate",
                       "value": ""
                   }
               ]

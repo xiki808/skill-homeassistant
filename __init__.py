@@ -14,11 +14,19 @@ __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
 
 
+def strTobool(v):
+    """ Converts String to boolean representation
+        From https://stackoverflow.com/questions/715417/
+        converting-from-a-string-to-boolean-in-python/715468#715468
+    """
+    return v.lower() in ("yes", "true", "t", "1")
+
+
 class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
         self.verify = verify
-        if portnum is None:
+        if portnum is None or portnum == 0:
             portnum = 8123
         if self.ssl:
             self.url = "https://%s:%d" % (host, portnum)
@@ -117,13 +125,21 @@ class HomeAssistantClient(object):
 class HomeAssistantSkill(MycroftSkill):
     def __init__(self):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
-        self.ha = HomeAssistantClient(
-            self.config.get('host'),
-            self.config.get('password'),
-            self.config.get('portnum'),
-            ssl=self.config.get('ssl', False),
-            verify=self.config.get('verify', True)
-            )
+        self.ha = None
+        self._setup()
+
+    def _setup(self):
+        if self.settings is not None:
+            if self.ha is None:
+                self.ha = HomeAssistantClient(
+                    self.settings.get('host'),
+                    self.settings.get('password'),
+                    int(self.settings.get('portnum')),
+                    strTobool(self.settings.get('ssl')),
+                    strTobool(self.settings.get('verify'))
+                    )
+        else:
+            self.ha = None
 
     def initialize(self):
         self.language = self.config_core.get('lang')
@@ -173,6 +189,10 @@ class HomeAssistantSkill(MycroftSkill):
         self.register_intent(intent, self.handle_tracker_intent)
 
     def handle_switch_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
         LOGGER.debug("Starting Switch Intent")
         entity = message.data["Entity"]
         action = message.data["Action"]
@@ -224,6 +244,10 @@ class HomeAssistantSkill(MycroftSkill):
             return
 
     def handle_light_set_intent(self, message):
+        self._setup()
+        if(self.ha is None):
+            self.speak_dialog('homeassistant.error.setup')
+            return
         entity = message.data["Entity"]
         try:
             brightness_req = float(message.data["BrightnessValue"])
@@ -266,6 +290,10 @@ class HomeAssistantSkill(MycroftSkill):
             return
 
     def handle_light_adjust_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
         entity = message.data["Entity"]
         try:
             brightness_req = float(message.data["BrightnessValue"])
@@ -345,6 +373,10 @@ class HomeAssistantSkill(MycroftSkill):
             return
 
     def handle_automation_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         # also handle scene and script requests
@@ -383,6 +415,10 @@ class HomeAssistantSkill(MycroftSkill):
     # In progress, still testing.
     #
     def handle_sensor_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         try:
@@ -452,6 +488,10 @@ class HomeAssistantSkill(MycroftSkill):
     # - overlapping command for directions modules
     # - (e.g. "How far is x from y?")
     def handle_tracker_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         try:
