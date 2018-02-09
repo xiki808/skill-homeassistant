@@ -23,18 +23,23 @@
                       "type": "Number",
                       "label": "Port number",
                       "value": ""
-                  },
+                  }
+              ]
+          }, 
+          {
+              "name": "Options",
+              "fields": [
                   {
                       "name": "ssl",
-                      "type": "text",
+                      "type": "checkbox",
                       "label": "Use SSL",
-                      "value": ""
+                      "value": "false"
                   },
                   {
                       "name": "verify",
-                      "type": "text",
-                      "label": "Verify SSL certficate",
-                      "value": ""
+                      "type": "checkbox",
+                      "label": "Verify SSL Certificate",
+                      "value": "true"
                   }
               ]
           }
