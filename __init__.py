@@ -269,13 +269,10 @@ class HomeAssistantSkill(MycroftSkill):
         # TODO - Allow value set
         if "SetVerb" in message.data:
             ha_data['brightness'] = brightness_value
+            ha_data['dev_name'] = ha_entity['dev_name']
             self.ha.execute_service("homeassistant", "turn_on", ha_data)
-            if self.language == 'de':
-                # TODO - Fix translation
-                self.speak("%s wurde gedimmt" % ha_entity['dev_name'])
-            else:
-                self.speak("Set the %s brightness to %s percent" %
-                           (ha_entity['dev_name'], brightness_percentage))
+            self.speak_dialog('homeassistant.brightness.dimmed',
+                              data=ha_data)
         else:
             self.speak_dialog('homeassistant.error.sorry')
             return
@@ -318,12 +315,8 @@ class HomeAssistantSkill(MycroftSkill):
         if "DecreaseVerb" in message.data or \
                 "LightDimVerb" in message.data:
             if ha_entity['state'] == "off":
-                if self.language == 'de':
-                    self.speak("Kann %s nicht dimmen. Es ist aus." %
-                               ha_entity['dev_name'])
-                else:
-                    self.speak("Can not dim %s. It is off." %
-                               ha_entity['dev_name'])
+                self.speak_dialog('homeassistant.brightness.cantdim',
+                              data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 ha_data['brightness'] = light_attrs[0]
@@ -332,19 +325,14 @@ class HomeAssistantSkill(MycroftSkill):
                 else:
                     ha_data['brightness'] -= brightness_value
                 self.ha.execute_service("homeassistant", "turn_on", ha_data)
-                if self.language == 'de':
-                    self.speak("%s wurde gedimmt" % ha_entity['dev_name'])
-                else:
-                    self.speak("Dimmed the %s" % ha_entity['dev_name'])
+                ha_data['dev_name'] = ha_entity['dev_name']
+                self.speak_dialog('homeassistant.brightness.decreased',
+                              data=ha_data)
         elif "IncreaseVerb" in message.data or \
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
-                if self.language == 'de':
-                    self.speak("Kann %s nicht dimmen. Es ist aus." %
-                               ha_entity['dev_name'])
-                else:
-                    self.speak("Can not dim %s. It is off." %
-                               ha_entity['dev_name'])
+                self.speak_dialog('homeassistant.brightness.cantdim',
+                              data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 ha_data['brightness'] = light_attrs[0]
@@ -353,12 +341,9 @@ class HomeAssistantSkill(MycroftSkill):
                 else:
                     ha_data['brightness'] += brightness_value
                 self.ha.execute_service("homeassistant", "turn_on", ha_data)
-                if self.language == 'de':
-                    self.speak("Erhoehe helligkeit auf %s" %
-                               ha_entity['dev_name'])
-                else:
-                    self.speak("Increased brightness of %s" %
-                               ha_entity['dev_name'])
+                ha_data['dev_name'] = ha_entity['dev_name']
+                self.speak_dialog('homeassistant.brightness.increased',
+                              data=ha_data)
         else:
             self.speak_dialog('homeassistant.error.sorry')
             return
