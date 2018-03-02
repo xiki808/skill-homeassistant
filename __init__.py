@@ -14,14 +14,6 @@ __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
 
 
-def strTobool(v):
-    """ Converts String to boolean representation
-        From https://stackoverflow.com/questions/715417/
-        converting-from-a-string-to-boolean-in-python/715468#715468
-    """
-    return v.lower() in ("yes", "true", "t", "1")
-
-
 class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
@@ -127,19 +119,40 @@ class HomeAssistantSkill(MycroftSkill):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self._setup()
+        try:
+            # Create a new HA-Client when the settings at home.mycroft.ai are
+            # changed
+            self.settings.set_changed_callback(self._settings_changed())
+        except:
+            LOGGER.log("Running outdated version, no automatic client update.")            
 
-    def _setup(self):
+    def _setup(self, force_update = False):
+        """
+        Create a new HA-Client object if not already done.
+        Also sets the client to None if no Settings are available.
+        
+        Param:
+            force_update (bool): Create new HA-Client even if already existing
+        """
         if self.settings is not None:
-            if self.ha is None:
+            if self.ha is None or force_update:
                 self.ha = HomeAssistantClient(
                     self.settings.get('host'),
                     self.settings.get('password'),
                     int(self.settings.get('portnum')),
-                    strTobool(self.settings.get('ssl')),
-                    strTobool(self.settings.get('verify'))
+                    self.settings.get('ssl') == 'true',
+                    self.settings.get('verify') == 'true'
                     )
         else:
             self.ha = None
+            self.speak_dialog('homeassistant.error.setup')
+
+    def _settings_changed(self):
+        """
+        Called when the settings at home.mycroft.ai get changed, will 
+        update the local HA-Client object.
+        """
+        self._setup(True)
 
     def initialize(self):
         self.language = self.config_core.get('lang')
@@ -191,8 +204,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_switch_intent(self, message):
         self._setup()
         if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
             return
+
         LOGGER.debug("Starting Switch Intent")
         entity = message.data["Entity"]
         action = message.data["Action"]
@@ -245,9 +258,9 @@ class HomeAssistantSkill(MycroftSkill):
 
     def handle_light_set_intent(self, message):
         self._setup()
-        if(self.ha is None):
-            self.speak_dialog('homeassistant.error.setup')
+        if self.ha is None: 
             return
+
         entity = message.data["Entity"]
         try:
             brightness_req = float(message.data["BrightnessValue"])
@@ -292,7 +305,6 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_light_adjust_intent(self, message):
         self._setup()
         if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
             return
         entity = message.data["Entity"]
         try:
@@ -375,8 +387,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_automation_intent(self, message):
         self._setup()
         if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
             return
+
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         # also handle scene and script requests
@@ -417,8 +429,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_sensor_intent(self, message):
         self._setup()
         if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
             return
+
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         try:
@@ -490,8 +502,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_tracker_intent(self, message):
         self._setup()
         if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
             return
+
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         try:
