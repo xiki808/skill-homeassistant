@@ -325,7 +325,7 @@ class HomeAssistantSkill(MycroftSkill):
                               "dev_name": entity})
             return
         ha_data = {'entity_id': ha_entity['id']}
-        # set context for 'turn it off again' or similar
+        # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         # if self.language == 'de':
@@ -389,7 +389,7 @@ class HomeAssistantSkill(MycroftSkill):
                               "dev_name": entity})
             return
 
-        # set context for 'turn it off again' or similar
+        # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         LOGGER.debug("Triggered automation/scene/script: {}".format(ha_data))
@@ -408,9 +408,6 @@ class HomeAssistantSkill(MycroftSkill):
             self.ha.execute_service("homeassistant", "turn_on",
                                     data=ha_data)
 
-    #
-    # In progress, still testing.
-    #
     def handle_sensor_intent(self, message):
         self._setup()
         if self.ha is None:
@@ -438,35 +435,29 @@ class HomeAssistantSkill(MycroftSkill):
             sensor_unit = unit_measurement[0]
             sensor_name = unit_measurement[1]
             sensor_state = unit_measurement[2]
-            if self.language == 'de':
-                self.speak_dialog('homeassistant.sensor', data={
-                              "dev_name": sensor_name,
-                              "value": sensor_state,
-                              "unit": sensor_unit})
-            else:
-                # extract unit for correct pronounciation
-                # this is fully optional
-                try:
-                    from quantulum import parser
-                    quantulumImport = True
-                except ImportError:
-                    quantulumImport = False
+            # extract unit for correct pronounciation
+            # this is fully optional
+            try:
+                from quantulum import parser
+                quantulumImport = True
+            except ImportError:
+                quantulumImport = False
 
-                if quantulumImport:
-                    quantity = parser.parse((u'{} is {} {}'.format(
-                                      sensor_name, sensor_state, sensor_unit)))
-                    if len(quantity) > 0:
-                        quantity = quantity[0]
-                        if (quantity.unit.name != "dimensionless" and
-                           quantity.uncertainty <= 0.5):
-                            sensor_unit = quantity.unit.name
-                            sensor_state = quantity.value
+            if quantulumImport:
+                quantity = parser.parse((u'{} is {} {}'.format(
+                                  sensor_name, sensor_state, sensor_unit)))
+                if len(quantity) > 0:
+                    quantity = quantity[0]
+                    if (quantity.unit.name != "dimensionless" and
+                       quantity.uncertainty <= 0.5):
+                        sensor_unit = quantity.unit.name
+                        sensor_state = quantity.value
 
-                self.speak_dialog('homeassistant.sensor', data={
-                              "dev_name": sensor_name,
-                              "value": sensor_state,
-                              "unit": sensor_unit})
-            # Add some context if the person wants to look the unit up
+            self.speak_dialog('homeassistant.sensor', data={
+                          "dev_name": sensor_name,
+                          "value": sensor_state,
+                          "unit": sensor_unit})
+            # IDEA: Add some context if the person wants to look the unit up
             # Maybe also change to name
             # if one wants to look up "outside temperature"
             # self.set_context("SubjectOfInterest", sensor_unit)
@@ -500,7 +491,7 @@ class HomeAssistantSkill(MycroftSkill):
                               "dev_name": entity})
             return
 
-        # set context for 'locate it off again' or similar
+        # IDEA: set context for 'locate it again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         entity = ha_entity['id']
