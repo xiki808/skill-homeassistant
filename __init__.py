@@ -111,8 +111,6 @@ class HomeAssistantClient(object):
             post("%s/api/services/%s/%s" % (self.url, domain, service),
                  headers=self.headers, data=json.dumps(data))
 
-# TODO - Localization
-
 
 class HomeAssistantSkill(MycroftSkill):
     def __init__(self):
@@ -226,7 +224,7 @@ class HomeAssistantSkill(MycroftSkill):
         LOGGER.debug("Entity State: %s" % ha_entity['state'])
         ha_data = {'entity_id': ha_entity['id']}
 
-        # set context for 'turn it off' again or similar
+        # IDEA: set context for 'turn it off' again or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         if self.language == 'de':
@@ -285,7 +283,7 @@ class HomeAssistantSkill(MycroftSkill):
             return
         ha_data = {'entity_id': ha_entity['id']}
 
-        # set context for 'turn it off again' or similar
+        # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         # TODO - Allow value set
