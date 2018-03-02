@@ -406,10 +406,10 @@ class HomeAssistantSkill(MycroftSkill):
             self.speak_dialog('homeassistant.device.unknown', data={
                               "dev_name": ha_entity['dev_name']})
             return
-        ha_data = ha_entity
+
         entity = ha_entity['id']
 
-        # set context for 'read it out again' or similar
+        # IDEA: set context for 'read it out again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         unit_measurement = self.ha.find_entity_attr(entity)
@@ -418,8 +418,10 @@ class HomeAssistantSkill(MycroftSkill):
             sensor_name = unit_measurement[1]
             sensor_state = unit_measurement[2]
             if self.language == 'de':
-                self.speak(('{} ist {} {}'.format(
-                    sensor_name, sensor_state, sensor_unit)))
+                self.speak_dialog('homeassistant.sensor', data={
+                              "dev_name": sensor_name,
+                              "value": sensor_state,
+                              "unit": sensor_unit})
             else:
                 # extract unit for correct pronounciation
                 # this is fully optional
@@ -450,13 +452,10 @@ class HomeAssistantSkill(MycroftSkill):
         else:
             sensor_name = unit_measurement[1]
             sensor_state = unit_measurement[2]
-            if self.language == 'de':
-                self.speak('{} ist {}'.format(sensor_name, sensor_state))
-            else:
-                self.speak_dialog('homeassistant.sensor', data={
-                              "dev_name": sensor_name,
-                              "value": sensor_state,
-                              "unit": ''})
+            self.speak_dialog('homeassistant.sensor', data={
+                          "dev_name": sensor_name,
+                          "value": sensor_state,
+                          "unit": ''})
 
     # In progress, still testing.
     # Device location works.
@@ -479,7 +478,6 @@ class HomeAssistantSkill(MycroftSkill):
             self.speak_dialog('homeassistant.device.unknown', data={
                               "dev_name": entity})
             return
-        ha_data = ha_entity
 
         # set context for 'locate it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
@@ -487,12 +485,9 @@ class HomeAssistantSkill(MycroftSkill):
         entity = ha_entity['id']
         dev_name = ha_entity['dev_name']
         dev_location = ha_entity['state']
-        if self.language == 'de':
-            self.speak('{} ist {}'.format(dev_name, dev_location))
-        else:
-            self.speak_dialog('homeassistant.tracker.found',
-                              data={'dev_name': dev_name,
-                                    'location': dev_location})
+        self.speak_dialog('homeassistant.tracker.found',
+                          data={'dev_name': dev_name,
+                                'location': dev_location})
 
     def stop(self):
         pass
