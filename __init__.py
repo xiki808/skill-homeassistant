@@ -84,9 +84,15 @@ class HomeAssistantClient(object):
                 if attr['entity_id'] == entity:
                     entity_attrs = attr['attributes']
                     if attr['entity_id'].startswith('light.'):
-                        unit_measur = entity_attrs['brightness']
+                        # Not all lamps do have a color
+                        try:
+                            unit_measur = entity_attrs['brightness']
+                        except KeyError:
+                            unit_measur = None
                         sensor_name = entity_attrs['friendly_name']
                         sensor_state = attr['state']
+                        # IDEA: return the color if available => allow changing
+                        # the color
                         return unit_measur, sensor_name, sensor_state
                     else:
                         try:
@@ -95,7 +101,7 @@ class HomeAssistantClient(object):
                             sensor_state = attr['state']
                             return unit_measur, sensor_name, sensor_state
                         except BaseException:
-                            unit_measur = 'null'
+                            unit_measur = None
                             sensor_name = entity_attrs['friendly_name']
                             sensor_state = attr['state']
                             return unit_measur, sensor_name, sensor_state
@@ -313,35 +319,45 @@ class HomeAssistantSkill(MycroftSkill):
         if "DecreaseVerb" in message.data or \
                 "LightDimVerb" in message.data:
             if ha_entity['state'] == "off":
-                self.speak_dialog('homeassistant.brightness.cantdim',
+                self.speak_dialog('homeassistant.brightness.cantdim.off',
                               data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
-                ha_data['brightness'] = light_attrs[0]
-                if ha_data['brightness'] < brightness_value:
-                    ha_data['brightness'] = 10
+                if light_attrs[0] is None:
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.dimmable',
+                        data=ha_entity)
                 else:
-                    ha_data['brightness'] -= brightness_value
-                self.ha.execute_service("homeassistant", "turn_on", ha_data)
-                ha_data['dev_name'] = ha_entity['dev_name']
-                self.speak_dialog('homeassistant.brightness.decreased',
-                              data=ha_data)
+                    ha_data['brightness'] = light_attrs[0]
+                    if ha_data['brightness'] < brightness_value:
+                        ha_data['brightness'] = 10
+                    else:
+                        ha_data['brightness'] -= brightness_value
+                    self.ha.execute_service("homeassistant", "turn_on", ha_data)
+                    ha_data['dev_name'] = ha_entity['dev_name']
+                    self.speak_dialog('homeassistant.brightness.decreased',
+                                  data=ha_data)
         elif "IncreaseVerb" in message.data or \
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
-                self.speak_dialog('homeassistant.brightness.cantdim',
-                              data=ha_entity)
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.dimmable',
+                        data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
-                ha_data['brightness'] = light_attrs[0]
-                if ha_data['brightness'] > brightness_value:
-                    ha_data['brightness'] = 255
+                if light_attrs[0] is None:
+                    self.speak_dialog('homeassistant.brightness.cantdim.off',
+                                      data=ha_entity)
                 else:
-                    ha_data['brightness'] += brightness_value
-                self.ha.execute_service("homeassistant", "turn_on", ha_data)
-                ha_data['dev_name'] = ha_entity['dev_name']
-                self.speak_dialog('homeassistant.brightness.increased',
-                              data=ha_data)
+                    ha_data['brightness'] = light_attrs[0]
+                    if ha_data['brightness'] > brightness_value:
+                        ha_data['brightness'] = 255
+                    else:
+                        ha_data['brightness'] += brightness_value
+                    self.ha.execute_service("homeassistant", "turn_on", ha_data)
+                    ha_data['dev_name'] = ha_entity['dev_name']
+                    self.speak_dialog('homeassistant.brightness.increased',
+                                  data=ha_data)
         else:
             self.speak_dialog('homeassistant.error.sorry')
             return
