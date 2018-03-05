@@ -128,7 +128,8 @@ class HomeAssistantSkill(MycroftSkill):
             # changed
             self.settings.set_changed_callback(self._settings_changed())
         except:
-            LOGGER.log("Running outdated version, no automatic client update.")            
+            LOGGER.debug(
+                "Running outdated version, no automatic client update.")            
 
     def _setup(self, force_update = False):
         """
@@ -234,7 +235,7 @@ class HomeAssistantSkill(MycroftSkill):
         # self.set_context('Entity', ha_entity['dev_name'])
 
         if self.language == 'de':
-            if action == 'ein':
+            if action == 'ein' or action == 'an':
                 action = 'on'
             elif action == 'aus':
                 action = 'off'
