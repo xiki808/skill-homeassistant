@@ -445,7 +445,7 @@ class HomeAssistantSkill(MycroftSkill):
         # self.set_context('Entity', ha_entity['dev_name'])
 
         unit_measurement = self.ha.find_entity_attr(entity)
-        if unit_measurement[0] != 'null':
+        if unit_measurement[0] is not None:
             sensor_unit = unit_measurement[0]
             sensor_name = unit_measurement[1]
             sensor_state = unit_measurement[2]
