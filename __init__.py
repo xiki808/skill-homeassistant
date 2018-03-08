@@ -13,6 +13,7 @@ import json
 __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
 
+
 class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
@@ -86,13 +87,13 @@ class HomeAssistantClient(object):
                     try:
                         if attr['entity_id'].startswith('light.'):
                             # Not all lamps do have a color
-                                unit_measur = entity_attrs['brightness']
+                            unit_measur = entity_attrs['brightness']
                         else:
-                                unit_measur = entity_attrs['unit_of_measurement']
+                            unit_measur = entity_attrs['unit_of_measurement']
                     except KeyError:
                         unit_measur = None
                     # IDEA: return the color if available => allow changing
-                    # TODO: change to return the whole attr dictionary => 
+                    # TODO: change to return the whole attr dictionary =>
                     # free use within handle methods
                     sensor_name = entity_attrs['friendly_name']
                     sensor_state = attr['state']
@@ -116,8 +117,9 @@ class HomeAssistantSkill(MycroftSkill):
         self._setup()
         try:
             self.settings.set_changed_callback(self._force_setup)
-        except:
-            LOGGER.debug('No auto-update on changed settings (Outdated version)')
+        except BaseException:
+            LOGGER.debug(
+                'No auto-update on changed settings (Outdated version)')
 
     def _setup(self, force=False):
         if self.settings is not None:
@@ -135,7 +137,7 @@ class HomeAssistantSkill(MycroftSkill):
     def _force_setup(self):
         LOGGER.debug('Creating a new HomeAssistant-Client')
         self._setup(True)
-    
+
     def initialize(self):
         self.language = self.config_core.get('lang')
         self.load_vocab_files(join(dirname(__file__), 'vocab', self.lang))
@@ -320,7 +322,7 @@ class HomeAssistantSkill(MycroftSkill):
                 "LightDimVerb" in message.data:
             if ha_entity['state'] == "off":
                 self.speak_dialog('homeassistant.brightness.cantdim.off',
-                              data=ha_entity)
+                                  data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 if light_attrs[0] is None:
@@ -333,10 +335,12 @@ class HomeAssistantSkill(MycroftSkill):
                         ha_data['brightness'] = 10
                     else:
                         ha_data['brightness'] -= brightness_value
-                    self.ha.execute_service("homeassistant", "turn_on", ha_data)
+                    self.ha.execute_service("homeassistant",
+                                            "turn_on",
+                                            ha_data)
                     ha_data['dev_name'] = ha_entity['dev_name']
                     self.speak_dialog('homeassistant.brightness.decreased',
-                                  data=ha_data)
+                                      data=ha_data)
         elif "IncreaseVerb" in message.data or \
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
@@ -355,10 +359,12 @@ class HomeAssistantSkill(MycroftSkill):
                         ha_data['brightness'] = 255
                     else:
                         ha_data['brightness'] += brightness_value
-                    self.ha.execute_service("homeassistant", "turn_on", ha_data)
+                    self.ha.execute_service("homeassistant",
+                                            "turn_on",
+                                            ha_data)
                     ha_data['dev_name'] = ha_entity['dev_name']
                     self.speak_dialog('homeassistant.brightness.increased',
-                                  data=ha_data)
+                                      data=ha_data)
         else:
             self.speak_dialog('homeassistant.error.sorry')
             return
