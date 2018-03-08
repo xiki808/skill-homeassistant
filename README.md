@@ -2,6 +2,11 @@
 
 [![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) [![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
 
+
+## Updates
+I have been busy for the past bit but will be making updates to this soon.  Thanks again for the support.
+
+
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
 This is a skill to add [Home Assistant](https://home-assistant.io) support to

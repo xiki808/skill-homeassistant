@@ -13,7 +13,6 @@ import json
 __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
 
-
 class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
@@ -98,14 +97,11 @@ class HomeAssistantClient(object):
                     else:
                         try:
                             unit_measur = entity_attrs['unit_of_measurement']
-                            sensor_name = entity_attrs['friendly_name']
-                            sensor_state = attr['state']
-                            return unit_measur, sensor_name, sensor_state
                         except BaseException:
                             unit_measur = None
-                            sensor_name = entity_attrs['friendly_name']
-                            sensor_state = attr['state']
-                            return unit_measur, sensor_name, sensor_state
+                        sensor_name = entity_attrs['friendly_name']
+                        sensor_state = attr['state']
+                        return unit_measur, sensor_name, sensor_state
         return None
 
     def execute_service(self, domain, service, data):
@@ -123,24 +119,10 @@ class HomeAssistantSkill(MycroftSkill):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self._setup()
-        try:
-            # Create a new HA-Client when the settings at home.mycroft.ai are
-            # changed
-            self.settings.set_changed_callback(self._settings_changed())
-        except:
-            LOGGER.debug(
-                "Running outdated version, no automatic client update.")            
 
-    def _setup(self, force_update = False):
-        """
-        Create a new HA-Client object if not already done.
-        Also sets the client to None if no Settings are available.
-        
-        Param:
-            force_update (bool): Create new HA-Client even if already existing
-        """
+    def _setup(self):
         if self.settings is not None:
-            if self.ha is None or force_update:
+            if self.ha is None:
                 self.ha = HomeAssistantClient(
                     self.settings.get('host'),
                     self.settings.get('password'),
@@ -150,14 +132,6 @@ class HomeAssistantSkill(MycroftSkill):
                     )
         else:
             self.ha = None
-            self.speak_dialog('homeassistant.error.setup')
-
-    def _settings_changed(self):
-        """
-        Called when the settings at home.mycroft.ai get changed, will 
-        update the local HA-Client object.
-        """
-        self._setup(True)
 
     def initialize(self):
         self.language = self.config_core.get('lang')
@@ -209,8 +183,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_switch_intent(self, message):
         self._setup()
         if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
             return
-
         LOGGER.debug("Starting Switch Intent")
         entity = message.data["Entity"]
         action = message.data["Action"]
@@ -235,7 +209,7 @@ class HomeAssistantSkill(MycroftSkill):
         # self.set_context('Entity', ha_entity['dev_name'])
 
         if self.language == 'de':
-            if action == 'ein' or action == 'an':
+            if action == 'ein':
                 action = 'on'
             elif action == 'aus':
                 action = 'off'
@@ -263,9 +237,9 @@ class HomeAssistantSkill(MycroftSkill):
 
     def handle_light_set_intent(self, message):
         self._setup()
-        if self.ha is None: 
+        if(self.ha is None):
+            self.speak_dialog('homeassistant.error.setup')
             return
-
         entity = message.data["Entity"]
         try:
             brightness_req = float(message.data["BrightnessValue"])
@@ -307,6 +281,7 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_light_adjust_intent(self, message):
         self._setup()
         if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
             return
         entity = message.data["Entity"]
         try:
@@ -363,13 +338,14 @@ class HomeAssistantSkill(MycroftSkill):
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
                     self.speak_dialog(
-                        'homeassistant.brightness.cantdim.dimmable',
+                        'homeassistant.brightness.cantdim.off',
                         data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 if light_attrs[0] is None:
-                    self.speak_dialog('homeassistant.brightness.cantdim.off',
-                                      data=ha_entity)
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.dimmable',
+                        data=ha_entity)
                 else:
                     ha_data['brightness'] = light_attrs[0]
                     if ha_data['brightness'] > brightness_value:
@@ -387,8 +363,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_automation_intent(self, message):
         self._setup()
         if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
             return
-
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         # also handle scene and script requests
@@ -426,8 +402,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_sensor_intent(self, message):
         self._setup()
         if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
             return
-
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         try:
@@ -448,41 +424,37 @@ class HomeAssistantSkill(MycroftSkill):
         unit_measurement = self.ha.find_entity_attr(entity)
         if unit_measurement[0] is not None:
             sensor_unit = unit_measurement[0]
-            sensor_name = unit_measurement[1]
-            sensor_state = unit_measurement[2]
-            # extract unit for correct pronounciation
-            # this is fully optional
-            try:
-                from quantulum import parser
-                quantulumImport = True
-            except ImportError:
-                quantulumImport = False
-
-            if quantulumImport:
-                quantity = parser.parse((u'{} is {} {}'.format(
-                                  sensor_name, sensor_state, sensor_unit)))
-                if len(quantity) > 0:
-                    quantity = quantity[0]
-                    if (quantity.unit.name != "dimensionless" and
-                       quantity.uncertainty <= 0.5):
-                        sensor_unit = quantity.unit.name
-                        sensor_state = quantity.value
-
-            self.speak_dialog('homeassistant.sensor', data={
-                          "dev_name": sensor_name,
-                          "value": sensor_state,
-                          "unit": sensor_unit})
-            # IDEA: Add some context if the person wants to look the unit up
-            # Maybe also change to name
-            # if one wants to look up "outside temperature"
-            # self.set_context("SubjectOfInterest", sensor_unit)
         else:
-            sensor_name = unit_measurement[1]
-            sensor_state = unit_measurement[2]
-            self.speak_dialog('homeassistant.sensor', data={
-                          "dev_name": sensor_name,
-                          "value": sensor_state,
-                          "unit": ''})
+            sensor_unit = ''
+
+        sensor_name = unit_measurement[1]
+        sensor_state = unit_measurement[2]
+        # extract unit for correct pronounciation
+        # this is fully optional
+        try:
+            from quantulum import parser
+            quantulumImport = True
+        except ImportError:
+            quantulumImport = False
+
+        if quantulumImport and unit_measurement != '':
+            quantity = parser.parse((u'{} is {} {}'.format(
+                              sensor_name, sensor_state, sensor_unit)))
+            if len(quantity) > 0:
+                quantity = quantity[0]
+                if (quantity.unit.name != "dimensionless" and
+                   quantity.uncertainty <= 0.5):
+                    sensor_unit = quantity.unit.name
+                    sensor_state = quantity.value
+
+        self.speak_dialog('homeassistant.sensor', data={
+                      "dev_name": sensor_name,
+                      "value": sensor_state,
+                      "unit": sensor_unit})
+        # IDEA: Add some context if the person wants to look the unit up
+        # Maybe also change to name
+        # if one wants to look up "outside temperature"
+        # self.set_context("SubjectOfInterest", sensor_unit)
 
     # In progress, still testing.
     # Device location works.
@@ -492,8 +464,8 @@ class HomeAssistantSkill(MycroftSkill):
     def handle_tracker_intent(self, message):
         self._setup()
         if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
             return
-
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
         try:
