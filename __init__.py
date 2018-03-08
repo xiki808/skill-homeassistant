@@ -83,25 +83,20 @@ class HomeAssistantClient(object):
             for attr in req.json():
                 if attr['entity_id'] == entity:
                     entity_attrs = attr['attributes']
-                    if attr['entity_id'].startswith('light.'):
-                        # Not all lamps do have a color
-                        try:
-                            unit_measur = entity_attrs['brightness']
-                        except KeyError:
-                            unit_measur = None
-                        sensor_name = entity_attrs['friendly_name']
-                        sensor_state = attr['state']
-                        # IDEA: return the color if available => allow changing
-                        # the color
-                        return unit_measur, sensor_name, sensor_state
-                    else:
-                        try:
-                            unit_measur = entity_attrs['unit_of_measurement']
-                        except BaseException:
-                            unit_measur = None
-                        sensor_name = entity_attrs['friendly_name']
-                        sensor_state = attr['state']
-                        return unit_measur, sensor_name, sensor_state
+                    try:
+                        if attr['entity_id'].startswith('light.'):
+                            # Not all lamps do have a color
+                                unit_measur = entity_attrs['brightness']
+                        else:
+                                unit_measur = entity_attrs['unit_of_measurement']
+                    except KeyError:
+                        unit_measur = None
+                    # IDEA: return the color if available => allow changing
+                    # TODO: change to return the whole attr dictionary => 
+                    # free use within handle methods
+                    sensor_name = entity_attrs['friendly_name']
+                    sensor_state = attr['state']
+                    return unit_measur, sensor_name, sensor_state
         return None
 
     def execute_service(self, domain, service, data):
@@ -119,10 +114,14 @@ class HomeAssistantSkill(MycroftSkill):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self._setup()
+        try:
+            self.settings.set_changed_callback(self._force_setup)
+        except:
+            LOGGER.debug('No auto-update on changed settings (Outdated version)')
 
-    def _setup(self):
+    def _setup(self, force=False):
         if self.settings is not None:
-            if self.ha is None:
+            if force or self.ha is None:
                 self.ha = HomeAssistantClient(
                     self.settings.get('host'),
                     self.settings.get('password'),
@@ -133,6 +132,10 @@ class HomeAssistantSkill(MycroftSkill):
         else:
             self.ha = None
 
+    def _force_setup(self):
+        LOGGER.debug('Creating a new HomeAssistant-Client')
+        self._setup(True)
+    
     def initialize(self):
         self.language = self.config_core.get('lang')
         self.load_vocab_files(join(dirname(__file__), 'vocab', self.lang))
