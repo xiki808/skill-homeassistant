@@ -424,41 +424,37 @@ class HomeAssistantSkill(MycroftSkill):
         unit_measurement = self.ha.find_entity_attr(entity)
         if unit_measurement[0] is not None:
             sensor_unit = unit_measurement[0]
-            sensor_name = unit_measurement[1]
-            sensor_state = unit_measurement[2]
-            # extract unit for correct pronounciation
-            # this is fully optional
-            try:
-                from quantulum import parser
-                quantulumImport = True
-            except ImportError:
-                quantulumImport = False
-
-            if quantulumImport:
-                quantity = parser.parse((u'{} is {} {}'.format(
-                                  sensor_name, sensor_state, sensor_unit)))
-                if len(quantity) > 0:
-                    quantity = quantity[0]
-                    if (quantity.unit.name != "dimensionless" and
-                       quantity.uncertainty <= 0.5):
-                        sensor_unit = quantity.unit.name
-                        sensor_state = quantity.value
-
-            self.speak_dialog('homeassistant.sensor', data={
-                          "dev_name": sensor_name,
-                          "value": sensor_state,
-                          "unit": sensor_unit})
-            # IDEA: Add some context if the person wants to look the unit up
-            # Maybe also change to name
-            # if one wants to look up "outside temperature"
-            # self.set_context("SubjectOfInterest", sensor_unit)
         else:
-            sensor_name = unit_measurement[1]
-            sensor_state = unit_measurement[2]
-            self.speak_dialog('homeassistant.sensor', data={
-                          "dev_name": sensor_name,
-                          "value": sensor_state,
-                          "unit": ''})
+            sensor_unit = ''
+
+        sensor_name = unit_measurement[1]
+        sensor_state = unit_measurement[2]
+        # extract unit for correct pronounciation
+        # this is fully optional
+        try:
+            from quantulum import parser
+            quantulumImport = True
+        except ImportError:
+            quantulumImport = False
+
+        if quantulumImport and unit_measurement != '':
+            quantity = parser.parse((u'{} is {} {}'.format(
+                              sensor_name, sensor_state, sensor_unit)))
+            if len(quantity) > 0:
+                quantity = quantity[0]
+                if (quantity.unit.name != "dimensionless" and
+                   quantity.uncertainty <= 0.5):
+                    sensor_unit = quantity.unit.name
+                    sensor_state = quantity.value
+
+        self.speak_dialog('homeassistant.sensor', data={
+                      "dev_name": sensor_name,
+                      "value": sensor_state,
+                      "unit": sensor_unit})
+        # IDEA: Add some context if the person wants to look the unit up
+        # Maybe also change to name
+        # if one wants to look up "outside temperature"
+        # self.set_context("SubjectOfInterest", sensor_unit)
 
     # In progress, still testing.
     # Device location works.
