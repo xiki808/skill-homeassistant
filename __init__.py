@@ -97,14 +97,11 @@ class HomeAssistantClient(object):
                     else:
                         try:
                             unit_measur = entity_attrs['unit_of_measurement']
-                            sensor_name = entity_attrs['friendly_name']
-                            sensor_state = attr['state']
-                            return unit_measur, sensor_name, sensor_state
                         except BaseException:
                             unit_measur = None
-                            sensor_name = entity_attrs['friendly_name']
-                            sensor_state = attr['state']
-                            return unit_measur, sensor_name, sensor_state
+                        sensor_name = entity_attrs['friendly_name']
+                        sensor_state = attr['state']
+                        return unit_measur, sensor_name, sensor_state
         return None
 
     def execute_service(self, domain, service, data):
@@ -341,13 +338,14 @@ class HomeAssistantSkill(MycroftSkill):
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
                     self.speak_dialog(
-                        'homeassistant.brightness.cantdim.dimmable',
+                        'homeassistant.brightness.cantdim.off',
                         data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 if light_attrs[0] is None:
-                    self.speak_dialog('homeassistant.brightness.cantdim.off',
-                                      data=ha_entity)
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.dimmable',
+                        data=ha_entity)
                 else:
                     ha_data['brightness'] = light_attrs[0]
                     if ha_data['brightness'] > brightness_value:
