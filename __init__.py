@@ -14,14 +14,6 @@ __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
 
 
-def strTobool(v):
-    """ Converts String to boolean representation
-        From https://stackoverflow.com/questions/715417/
-        converting-from-a-string-to-boolean-in-python/715468#715468
-    """
-    return v.lower() in ("yes", "true", "t", "1")
-
-
 class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
@@ -92,22 +84,20 @@ class HomeAssistantClient(object):
             for attr in req.json():
                 if attr['entity_id'] == entity:
                     entity_attrs = attr['attributes']
-                    if attr['entity_id'].startswith('light.'):
-                        unit_measur = entity_attrs['brightness']
-                        sensor_name = entity_attrs['friendly_name']
-                        sensor_state = attr['state']
-                        return unit_measur, sensor_name, sensor_state
-                    else:
-                        try:
+                    try:
+                        if attr['entity_id'].startswith('light.'):
+                            # Not all lamps do have a color
+                            unit_measur = entity_attrs['brightness']
+                        else:
                             unit_measur = entity_attrs['unit_of_measurement']
-                            sensor_name = entity_attrs['friendly_name']
-                            sensor_state = attr['state']
-                            return unit_measur, sensor_name, sensor_state
-                        except BaseException:
-                            unit_measur = 'null'
-                            sensor_name = entity_attrs['friendly_name']
-                            sensor_state = attr['state']
-                            return unit_measur, sensor_name, sensor_state
+                    except KeyError:
+                        unit_measur = None
+                    # IDEA: return the color if available => allow changing
+                    # TODO: change to return the whole attr dictionary =>
+                    # free use within handle methods
+                    sensor_name = entity_attrs['friendly_name']
+                    sensor_state = attr['state']
+                    return unit_measur, sensor_name, sensor_state
         return None
 
     def execute_service(self, domain, service, data):
@@ -119,27 +109,34 @@ class HomeAssistantClient(object):
             post("%s/api/services/%s/%s" % (self.url, domain, service),
                  headers=self.headers, data=json.dumps(data))
 
-# TODO - Localization
-
 
 class HomeAssistantSkill(MycroftSkill):
     def __init__(self):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self._setup()
+        try:
+            self.settings.set_changed_callback(self._force_setup)
+        except BaseException:
+            LOGGER.debug(
+                'No auto-update on changed settings (Outdated version)')
 
-    def _setup(self):
+    def _setup(self, force=False):
         if self.settings is not None:
-            if self.ha is None:
+            if force or self.ha is None:
                 self.ha = HomeAssistantClient(
                     self.settings.get('host'),
                     self.settings.get('password'),
                     int(self.settings.get('portnum')),
-                    strTobool(self.settings.get('ssl')),
-                    strTobool(self.settings.get('verify'))
+                    self.settings.get('ssl') == 'true',
+                    self.settings.get('verify') == 'true'
                     )
         else:
             self.ha = None
+
+    def _force_setup(self):
+        LOGGER.debug('Creating a new HomeAssistant-Client')
+        self._setup(True)
 
     def initialize(self):
         self.language = self.config_core.get('lang')
@@ -213,7 +210,7 @@ class HomeAssistantSkill(MycroftSkill):
         LOGGER.debug("Entity State: %s" % ha_entity['state'])
         ha_data = {'entity_id': ha_entity['id']}
 
-        # set context for 'turn it off' again or similar
+        # IDEA: set context for 'turn it off' again or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         if self.language == 'de':
@@ -272,19 +269,16 @@ class HomeAssistantSkill(MycroftSkill):
             return
         ha_data = {'entity_id': ha_entity['id']}
 
-        # set context for 'turn it off again' or similar
+        # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         # TODO - Allow value set
         if "SetVerb" in message.data:
             ha_data['brightness'] = brightness_value
+            ha_data['dev_name'] = ha_entity['dev_name']
             self.ha.execute_service("homeassistant", "turn_on", ha_data)
-            if self.language == 'de':
-                # TODO - Fix translation
-                self.speak("%s wurde gedimmt" % ha_entity['dev_name'])
-            else:
-                self.speak("Set the %s brightness to %s percent" %
-                           (ha_entity['dev_name'], brightness_percentage))
+            self.speak_dialog('homeassistant.brightness.dimmed',
+                              data=ha_data)
         else:
             self.speak_dialog('homeassistant.error.sorry')
             return
@@ -316,7 +310,7 @@ class HomeAssistantSkill(MycroftSkill):
                               "dev_name": entity})
             return
         ha_data = {'entity_id': ha_entity['id']}
-        # set context for 'turn it off again' or similar
+        # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         # if self.language == 'de':
@@ -327,47 +321,50 @@ class HomeAssistantSkill(MycroftSkill):
         if "DecreaseVerb" in message.data or \
                 "LightDimVerb" in message.data:
             if ha_entity['state'] == "off":
-                if self.language == 'de':
-                    self.speak("Kann %s nicht dimmen. Es ist aus." %
-                               ha_entity['dev_name'])
-                else:
-                    self.speak("Can not dim %s. It is off." %
-                               ha_entity['dev_name'])
+                self.speak_dialog('homeassistant.brightness.cantdim.off',
+                                  data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
-                ha_data['brightness'] = light_attrs[0]
-                if ha_data['brightness'] < brightness_value:
-                    ha_data['brightness'] = 10
+                if light_attrs[0] is None:
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.dimmable',
+                        data=ha_entity)
                 else:
-                    ha_data['brightness'] -= brightness_value
-                self.ha.execute_service("homeassistant", "turn_on", ha_data)
-                if self.language == 'de':
-                    self.speak("%s wurde gedimmt" % ha_entity['dev_name'])
-                else:
-                    self.speak("Dimmed the %s" % ha_entity['dev_name'])
+                    ha_data['brightness'] = light_attrs[0]
+                    if ha_data['brightness'] < brightness_value:
+                        ha_data['brightness'] = 10
+                    else:
+                        ha_data['brightness'] -= brightness_value
+                    self.ha.execute_service("homeassistant",
+                                            "turn_on",
+                                            ha_data)
+                    ha_data['dev_name'] = ha_entity['dev_name']
+                    self.speak_dialog('homeassistant.brightness.decreased',
+                                      data=ha_data)
         elif "IncreaseVerb" in message.data or \
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
-                if self.language == 'de':
-                    self.speak("Kann %s nicht dimmen. Es ist aus." %
-                               ha_entity['dev_name'])
-                else:
-                    self.speak("Can not dim %s. It is off." %
-                               ha_entity['dev_name'])
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.off',
+                        data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
-                ha_data['brightness'] = light_attrs[0]
-                if ha_data['brightness'] > brightness_value:
-                    ha_data['brightness'] = 255
+                if light_attrs[0] is None:
+                    self.speak_dialog(
+                        'homeassistant.brightness.cantdim.dimmable',
+                        data=ha_entity)
                 else:
-                    ha_data['brightness'] += brightness_value
-                self.ha.execute_service("homeassistant", "turn_on", ha_data)
-                if self.language == 'de':
-                    self.speak("Erhoehe helligkeit auf %s" %
-                               ha_entity['dev_name'])
-                else:
-                    self.speak("Increased brightness of %s" %
-                               ha_entity['dev_name'])
+                    ha_data['brightness'] = light_attrs[0]
+                    if ha_data['brightness'] > brightness_value:
+                        ha_data['brightness'] = 255
+                    else:
+                        ha_data['brightness'] += brightness_value
+                    self.ha.execute_service("homeassistant",
+                                            "turn_on",
+                                            ha_data)
+                    ha_data['dev_name'] = ha_entity['dev_name']
+                    self.speak_dialog('homeassistant.brightness.increased',
+                                      data=ha_data)
         else:
             self.speak_dialog('homeassistant.error.sorry')
             return
@@ -392,7 +389,7 @@ class HomeAssistantSkill(MycroftSkill):
                               "dev_name": entity})
             return
 
-        # set context for 'turn it off again' or similar
+        # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         LOGGER.debug("Triggered automation/scene/script: {}".format(ha_data))
@@ -411,9 +408,6 @@ class HomeAssistantSkill(MycroftSkill):
             self.ha.execute_service("homeassistant", "turn_on",
                                     data=ha_data)
 
-    #
-    # In progress, still testing.
-    #
     def handle_sensor_intent(self, message):
         self._setup()
         if self.ha is None:
@@ -430,57 +424,46 @@ class HomeAssistantSkill(MycroftSkill):
             self.speak_dialog('homeassistant.device.unknown', data={
                               "dev_name": ha_entity['dev_name']})
             return
-        ha_data = ha_entity
+
         entity = ha_entity['id']
 
-        # set context for 'read it out again' or similar
+        # IDEA: set context for 'read it out again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         unit_measurement = self.ha.find_entity_attr(entity)
-        if unit_measurement[0] != 'null':
+        if unit_measurement[0] is not None:
             sensor_unit = unit_measurement[0]
-            sensor_name = unit_measurement[1]
-            sensor_state = unit_measurement[2]
-            if self.language == 'de':
-                self.speak(('{} ist {} {}'.format(
-                    sensor_name, sensor_state, sensor_unit)))
-            else:
-                # extract unit for correct pronounciation
-                # this is fully optional
-                try:
-                    from quantulum import parser
-                    quantulumImport = True
-                except ImportError:
-                    quantulumImport = False
-
-                if quantulumImport:
-                    quantity = parser.parse((u'{} is {} {}'.format(
-                                      sensor_name, sensor_state, sensor_unit)))
-                    if len(quantity) > 0:
-                        quantity = quantity[0]
-                        if (quantity.unit.name != "dimensionless" and
-                           quantity.uncertainty <= 0.5):
-                            sensor_unit = quantity.unit.name
-                            sensor_state = quantity.value
-
-                self.speak_dialog('homeassistant.sensor', data={
-                              "dev_name": sensor_name,
-                              "value": sensor_state,
-                              "unit": sensor_unit})
-            # Add some context if the person wants to look the unit up
-            # Maybe also change to name
-            # if one wants to look up "outside temperature"
-            # self.set_context("SubjectOfInterest", sensor_unit)
         else:
-            sensor_name = unit_measurement[1]
-            sensor_state = unit_measurement[2]
-            if self.language == 'de':
-                self.speak('{} ist {}'.format(sensor_name, sensor_state))
-            else:
-                self.speak_dialog('homeassistant.sensor', data={
-                              "dev_name": sensor_name,
-                              "value": sensor_state,
-                              "unit": ''})
+            sensor_unit = ''
+
+        sensor_name = unit_measurement[1]
+        sensor_state = unit_measurement[2]
+        # extract unit for correct pronounciation
+        # this is fully optional
+        try:
+            from quantulum import parser
+            quantulumImport = True
+        except ImportError:
+            quantulumImport = False
+
+        if quantulumImport and unit_measurement != '':
+            quantity = parser.parse((u'{} is {} {}'.format(
+                              sensor_name, sensor_state, sensor_unit)))
+            if len(quantity) > 0:
+                quantity = quantity[0]
+                if (quantity.unit.name != "dimensionless" and
+                   quantity.uncertainty <= 0.5):
+                    sensor_unit = quantity.unit.name
+                    sensor_state = quantity.value
+
+        self.speak_dialog('homeassistant.sensor', data={
+                      "dev_name": sensor_name,
+                      "value": sensor_state,
+                      "unit": sensor_unit})
+        # IDEA: Add some context if the person wants to look the unit up
+        # Maybe also change to name
+        # if one wants to look up "outside temperature"
+        # self.set_context("SubjectOfInterest", sensor_unit)
 
     # In progress, still testing.
     # Device location works.
@@ -503,20 +486,16 @@ class HomeAssistantSkill(MycroftSkill):
             self.speak_dialog('homeassistant.device.unknown', data={
                               "dev_name": entity})
             return
-        ha_data = ha_entity
 
-        # set context for 'locate it off again' or similar
+        # IDEA: set context for 'locate it again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
         entity = ha_entity['id']
         dev_name = ha_entity['dev_name']
         dev_location = ha_entity['state']
-        if self.language == 'de':
-            self.speak('{} ist {}'.format(dev_name, dev_location))
-        else:
-            self.speak_dialog('homeassistant.tracker.found',
-                              data={'dev_name': dev_name,
-                                    'location': dev_location})
+        self.speak_dialog('homeassistant.tracker.found',
+                          data={'dev_name': dev_name,
+                                'location': dev_location})
 
     def stop(self):
         pass
