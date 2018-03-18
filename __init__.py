@@ -199,7 +199,8 @@ class HomeAssistantSkill(MycroftSkill):
         # every single entity not the whole group
         try:
             ha_entity = self.ha.find_entity(
-                entity, ['group', 'light', 'switch', 'scene', 'input_boolean'])
+                entity, ['group', 'light', 'fan', 'switch', 'scene',
+                         'input_boolean'])
         except ConnectionError:
             self.speak_dialog('homeassistant.error.offline')
             return
