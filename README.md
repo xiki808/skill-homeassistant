@@ -21,6 +21,8 @@ You can always find me in the mycroft mattermost channel here, https://chat.mycr
 
 If you like this and want to say thanks check out my [Patreon](https://www.patreon.com/Geekedoutsol) I also include special posts here for my Patrons.
 
+You can also join my slack server at https://geek-slack-invite.herokuapp.com
+
 ## Installation
 Before installation ensure you have python-dev package installed for your OS.  For debian this would be `apt-get install python-dev` it is required for the levenstein package.
 
