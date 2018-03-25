@@ -41,6 +41,13 @@ pip install -r requirements.txt
 Note: python-Levenshtein requires python-dev to be installed.
 ```sudo apt-get install python-dev```
 
+## Configuration
+This skill utilizes the skillsettings.json file which allows you to configure this skill via home.mycroft.ai after a few minutes of having the skill installed you should see something like below in the https://home.mycroft.ai/#/skill location:
+
+Fill this out with your appropriate home assistant information and hit save.
+
+![Screenshot](screenshot.JPG?raw=true)
+
 ## Usage
 
 Say something like "Hey Mycroft, turn on living room lights". Currently available commands
