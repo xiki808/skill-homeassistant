@@ -1,6 +1,14 @@
 # Home Assistant Skill for Mycroft
 
-[![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) [![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
+[![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) 
+[![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
+[![](https://geek-slack-invite.herokuapp.com/badge.svg)](https://geek-slack-invite.herokuapp.com)
+
+
+
+## Updates
+I have been busy for the past bit but will be making updates to this soon.  Thanks again for the support.
+
 
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
@@ -12,6 +20,8 @@ entity types (`light`, `switch`, `scene`, `groups` and `input_boolean`).
 You can always find me in the mycroft mattermost channel here, https://chat.mycroft.ai
 
 If you like this and want to say thanks check out my [Patreon](https://www.patreon.com/Geekedoutsol) I also include special posts here for my Patrons.
+
+You can also join my slack server at https://geek-slack-invite.herokuapp.com
 
 ## Installation
 Before installation ensure you have python-dev package installed for your OS.  For debian this would be `apt-get install python-dev` it is required for the levenstein package.
@@ -30,26 +40,6 @@ pip install -r requirements.txt
 ```
 Note: python-Levenshtein requires python-dev to be installed.
 ```sudo apt-get install python-dev```
-
-
-## Configuration
-
-Add a block to your `~/.mycroft/mycroft.conf` file like this:
-
-```
-  "HomeAssistantSkill": {
-    "host": "hass.mylan.net",
-    "password": "mysupersecrethasspass",
-    "portnum": 8123,
-    "ssl": true|false
-  }
-```
-
-NOTE: portnum is for the port number you have Home Assistant running on. 8123 is default.
-
-NOTE: SSL support is currently secure as it does verify the cert.
-
-You will then need to restart mycroft.
 
 ## Usage
 
@@ -95,6 +85,9 @@ Currently the phrases are:
  * New intent for locking/unlocking lock entities (with added security?)
  * New intent for thermostat values, raising, etc.
  * ...
+
+## In Development
+* Climate and Weather intents
 
 ## Contributing
 
