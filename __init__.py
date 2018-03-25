@@ -46,7 +46,7 @@ class HomeAssistantClient(object):
                         # something like temperature outside
                         # should score on "outside temperature sensor"
                         # and repetitions should not count on my behalf
-                        score = fuzz.token_set_ratio(
+                        score = fuzz.token_sort_ratio(
                             entity,
                             state['attributes']['friendly_name'].lower())
                         if score > best_score:
@@ -56,7 +56,7 @@ class HomeAssistantClient(object):
                                 "dev_name": state['attributes']
                                 ['friendly_name'],
                                 "state": state['state']}
-                        score = fuzz.token_set_ratio(
+                        score = fuzz.token_sort_ratio(
                             entity,
                             state['entity_id'].lower())
                         if score > best_score:
