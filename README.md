@@ -78,6 +78,8 @@ Currently the phrases are:
 * Hey Mycroft, turn on Movietime (Movietime is a scene)
 * Hey Mycroft, status of thermostat (For sensors in homeassistant)
 * Hey Mycroft, locate/where brian (Brian is a device tracker object)
+* Hey Mycroft, what is the current living room temp
+* Hey Mycroft, what is the current season
 
 
 
