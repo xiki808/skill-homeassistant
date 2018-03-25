@@ -5,11 +5,6 @@
 [![](https://geek-slack-invite.herokuapp.com/badge.svg)](https://geek-slack-invite.herokuapp.com)
 
 
-
-## Updates
-I have been busy for the past bit but will be making updates to this soon.  Thanks again for the support.
-
-
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
 This is a skill to add [Home Assistant](https://home-assistant.io) support to
@@ -107,3 +102,9 @@ All contributions welcome:
 ## Licence
 
 See [`LICENCE`](https://gitlab.com/robconnolly/mycroft-home-assistant/blob/master/LICENSE).
+
+## Donate
+
+If you liked this project, you can donate to support it and new features
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brianhh1230%40gmail%2ecom&lc=US&item_name=Geeked%20Out%20Solutions&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
