@@ -92,7 +92,7 @@ class HomeAssistantClient(object):
                             unit_measur = entity_attrs['unit_of_measurement']
                     except KeyError:
                         unit_measur = None
-                    # IDEA: return the color if available => allow changing
+                    # IDEA: return the color if available
                     # TODO: change to return the whole attr dictionary =>
                     # free use within handle methods
                     sensor_name = entity_attrs['friendly_name']
@@ -111,6 +111,7 @@ class HomeAssistantClient(object):
 
 
 class HomeAssistantSkill(MycroftSkill):
+
     def __init__(self):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
@@ -423,7 +424,7 @@ class HomeAssistantSkill(MycroftSkill):
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": ha_entity['dev_name']})
+                              "dev_name": entity})
             return
 
         entity = ha_entity['id']
