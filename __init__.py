@@ -1,7 +1,7 @@
 from os.path import dirname, join
 
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import MycroftSkill
+from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 
 from os.path import dirname, join
@@ -12,6 +12,9 @@ import json
 
 __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
+
+# Timeout time for HA requests
+TIMEOUT = 10
 
 
 class HomeAssistantClient(object):
@@ -32,9 +35,11 @@ class HomeAssistantClient(object):
     def find_entity(self, entity, types):
         if self.ssl:
             req = get("%s/api/states" %
-                      self.url, headers=self.headers, verify=self.verify)
+                      self.url, headers=self.headers,
+                       verify=self.verify, timeout=TIMEOUT)
         else:
-            req = get("%s/api/states" % self.url, headers=self.headers)
+            req = get("%s/api/states" % self.url, headers=self.headers,
+                      timeout=TIMEOUT)
 
         if req.status_code == 200:
             # require a score above 50%
@@ -76,9 +81,11 @@ class HomeAssistantClient(object):
     def find_entity_attr(self, entity):
         if self.ssl:
             req = get("%s/api/states" %
-                      self.url, headers=self.headers, verify=self.verify)
+                      self.url, headers=self.headers, verify=self.verify,
+                      timeout=TIMEOUT)
         else:
-            req = get("%s/api/states" % self.url, headers=self.headers)
+            req = get("%s/api/states" % self.url, headers=self.headers,
+                      timeout=TIMEOUT)
 
         if req.status_code == 200:
             for attr in req.json():
@@ -104,17 +111,58 @@ class HomeAssistantClient(object):
         if self.ssl:
             post("%s/api/services/%s/%s" % (self.url, domain, service),
                  headers=self.headers, data=json.dumps(data),
-                 verify=self.verify)
+                 verify=self.verify, timeout=TIMEOUT)
         else:
             post("%s/api/services/%s/%s" % (self.url, domain, service),
-                 headers=self.headers, data=json.dumps(data))
+                 headers=self.headers, data=json.dumps(data), timeout=TIMEOUT)
+
+    def find_component(self, component):
+        """Check if a component is loaded at the HA-Server"""
+        if self.ssl:
+            req = get("%s/api/components" %
+                      self.url, headers=self.headers, verify=self.verify,
+                      timeout=TIMEOUT)
+        else:
+            req = get("%s/api/components" % self.url, headers=self.headers,
+                      timeout=TIMEOUT)
+
+        if req.status_code == 200:
+            return component in req.json()
+
+    def engage_conversation(self, utterance):
+        """Engage the conversation component at the Home Assistant server
+
+        Attributes:
+            utterance    raw text message to be processed
+        Return:
+            Dict answer by Home Assistant server
+            { 'speech': textual answer,
+              'extra_data': ...}
+        """
+        data = {
+             "text": utterance
+             }
+        if self.ssl:
+            return post("%s/api/conversation/process" % (self.url),
+                        headers=self.headers,
+                        data=json.dumps(data),
+                        verify=self.verify,
+                        timeout=TIMEOUT
+                        ).json()['speech']['plain']
+        else:
+            return post("%s/api/conversation/process" % (self.url),
+                        headers=self.headers,
+                        data=json.dumps(data),
+                        timeout=TIMEOUT
+                        ).json()['speech']['plain']
 
 
-class HomeAssistantSkill(MycroftSkill):
+class HomeAssistantSkill(FallbackSkill):
 
     def __init__(self):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
+        self.enable_fallback = False
         self._setup()
         try:
             self.settings.set_changed_callback(self._force_setup)
@@ -123,17 +171,21 @@ class HomeAssistantSkill(MycroftSkill):
                 'No auto-update on changed settings (Outdated version)')
 
     def _setup(self, force=False):
-        if self.settings is not None:
-            if force or self.ha is None:
-                self.ha = HomeAssistantClient(
-                    self.settings.get('host'),
-                    self.settings.get('password'),
-                    int(self.settings.get('portnum')),
-                    self.settings.get('ssl') == 'true',
-                    self.settings.get('verify') == 'true'
-                    )
-        else:
-            self.ha = None
+        if self.settings is not None and (force or self.ha is None):
+            self.ha = HomeAssistantClient(
+                self.settings.get('host'),
+                self.settings.get('password'),
+                int(self.settings.get('portnum')),
+                self.settings.get('ssl') == 'true',
+                self.settings.get('verify') == 'true'
+                )
+            if self.ha:
+            # Check if conversation component is loaded at HA-server
+            # and activate fallback accordingly (ha-server/api/components)
+            # TODO: enable other tools like dialogflow
+                if (self.ha.find_component('conversation') and
+                   self.settings.get('enable_fallback') == 'true'):
+                    self.enable_fallback = True
 
     def _force_setup(self):
         LOGGER.debug('Creating a new HomeAssistant-Client')
@@ -149,6 +201,8 @@ class HomeAssistantSkill(MycroftSkill):
         self.__build_automation_intent()
         self.__build_sensor_intent()
         self.__build_tracker_intent()
+        # Needs higher priority than general fallback skills
+        self.register_fallback(self.handle_fallback, 2)
 
     def __build_switch_intent(self):
         intent = IntentBuilder("switchIntent").require("SwitchActionKeyword") \
@@ -498,6 +552,37 @@ class HomeAssistantSkill(MycroftSkill):
         self.speak_dialog('homeassistant.tracker.found',
                           data={'dev_name': dev_name,
                                 'location': dev_location})
+
+    def handle_fallback(self, message):
+        if not self.enable_fallback:
+            return False
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return False
+        # pass message to HA-server
+        try:
+            response = self.ha.engage_conversation(
+                message.data.get('utterance'))
+        except ConnectionError:
+            self.speak_dialog('homeassistant.error.offline')
+            return False
+        # default non-parsing answer: "Sorry, I didn't understand that"
+        answer = response.get('speech')
+        if not answer or answer == "Sorry, I didn't understand that":
+            return False
+
+        asked_question = False
+        # TODO: maybe enable conversation here if server asks sth like
+        # "In which room?" => answer should be directly passed to this skill
+        if answer.endswith("?"):
+            asked_question = True
+        self.speak(answer, expect_response=asked_question)
+        return True
+
+    def shutdown(self):
+        self.remove_fallback(self.handle_fallback)
+        super(HomeAssistantSkill, self).shutdown()
 
     def stop(self):
         pass
