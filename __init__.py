@@ -36,7 +36,7 @@ class HomeAssistantClient(object):
         if self.ssl:
             req = get("%s/api/states" %
                       self.url, headers=self.headers,
-                       verify=self.verify, timeout=TIMEOUT)
+                      verify=self.verify, timeout=TIMEOUT)
         else:
             req = get("%s/api/states" % self.url, headers=self.headers,
                       timeout=TIMEOUT)
@@ -180,9 +180,9 @@ class HomeAssistantSkill(FallbackSkill):
                 self.settings.get('verify') == 'true'
                 )
             if self.ha:
-            # Check if conversation component is loaded at HA-server
-            # and activate fallback accordingly (ha-server/api/components)
-            # TODO: enable other tools like dialogflow
+                # Check if conversation component is loaded at HA-server
+                # and activate fallback accordingly (ha-server/api/components)
+                # TODO: enable other tools like dialogflow
                 if (self.ha.find_component('conversation') and
                    self.settings.get('enable_fallback') == 'true'):
                     self.enable_fallback = True
