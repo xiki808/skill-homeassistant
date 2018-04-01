@@ -40,6 +40,12 @@
                       "type": "checkbox",
                       "label": "Verify SSL Certificate",
                       "value": "true"
+                  },
+                  {
+                      "name": "enable_fallback",
+                      "type": "checkbox",
+                      "label": "Enable conversation component as fallback",
+                      "value": "true"
                   }
               ]
           }
