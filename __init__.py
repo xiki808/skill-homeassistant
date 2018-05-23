@@ -173,8 +173,6 @@ class HomeAssistantSkill(FallbackSkill):
     def _setup(self, force=False):
         if self.settings is not None and (force or self.ha is None):
             portnumber = self.settings.get('portnum')
-            if portnumber is None:
-                portnumber = 8123
             try:
                 portnumber = int(portnumber)
             except ValueError:
