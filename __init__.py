@@ -179,11 +179,6 @@ class HomeAssistantSkill(FallbackSkill):
             except ValueError:
                 # String might be some rubbish (like '')
                 portnumber = 0
-            try:
-                host = host
-            except ValueError:
-                # String might be missing
-                host = 'localhost'
             self.ha = HomeAssistantClient(
                 host,
                 self.settings.get('password'),
