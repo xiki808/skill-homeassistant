@@ -131,7 +131,6 @@ class HomeAssistantClient(object):
 
     def engage_conversation(self, utterance):
         """Engage the conversation component at the Home Assistant server
-
         Attributes:
             utterance    raw text message to be processed
         Return:
@@ -173,14 +172,13 @@ class HomeAssistantSkill(FallbackSkill):
     def _setup(self, force=False):
         if self.settings is not None and (force or self.ha is None):
             portnumber = self.settings.get('portnum')
-            host = self.settings.get('host')
             try:
                 portnumber = int(portnumber)
             except ValueError:
                 # String might be some rubbish (like '')
                 portnumber = 0
             self.ha = HomeAssistantClient(
-                host,
+                self.settings.get('host'),
                 self.settings.get('password'),
                 portnumber,
                 self.settings.get('ssl') == 'true',
