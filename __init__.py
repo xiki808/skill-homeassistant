@@ -162,7 +162,6 @@ class HomeAssistantSkill(FallbackSkill):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self.enable_fallback = False
-        self._setup()
         try:
             self.settings.set_changed_callback(self._force_setup)
         except BaseException:
@@ -200,6 +199,7 @@ class HomeAssistantSkill(FallbackSkill):
         self.language = self.config_core.get('lang')
         self.load_vocab_files(join(dirname(__file__), 'vocab', self.lang))
         self.load_regex_files(join(dirname(__file__), 'regex', self.lang))
+        self._setup()
         self.__build_switch_intent()
         self.__build_light_set_intent()
         self.__build_light_adjust_intent()
