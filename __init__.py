@@ -21,6 +21,8 @@ class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
         self.verify = verify
+        if host is None:
+            host = 'localhost'
         if portnum is None or portnum == 0:
             portnum = 8123
         if self.ssl:
