@@ -1,8 +1,5 @@
 # Home Assistant Skill for Mycroft
 
-# No longer maintaining for new version of Mycroft
-I have decided to take a break from Mycroft and focus on my other personal projects more so I will not be updating this for the new Python 3 or skill branch changes.
-
 [![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) 
 [![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
 [![](https://geek-slack-invite.herokuapp.com/badge.svg)](https://geek-slack-invite.herokuapp.com)
