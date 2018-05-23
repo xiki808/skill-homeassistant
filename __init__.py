@@ -21,8 +21,6 @@ class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
         self.verify = verify
-        if host is None:
-            host = 'localhost'
         if portnum is None or portnum == 0:
             portnum = 8123
         if self.ssl:
@@ -175,13 +173,19 @@ class HomeAssistantSkill(FallbackSkill):
     def _setup(self, force=False):
         if self.settings is not None and (force or self.ha is None):
             portnumber = self.settings.get('portnum')
+            host = self.settings.get('host')
             try:
                 portnumber = int(portnumber)
             except ValueError:
                 # String might be some rubbish (like '')
                 portnumber = 0
+            try:
+                host = host
+            except ValueError:
+                # String might be missing
+                host = 'localhost'
             self.ha = HomeAssistantClient(
-                self.settings.get('host'),
+                host,
                 self.settings.get('password'),
                 portnumber,
                 self.settings.get('ssl') == 'true',
