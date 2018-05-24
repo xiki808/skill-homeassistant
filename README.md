@@ -7,6 +7,10 @@
 
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
+# Updates
+Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.  I'm working on updating the code to also work for when you update the values from the site should be done in a few days.
+
+
 This is a skill to add [Home Assistant](https://home-assistant.io) support to
 [Mycroft](https://mycroft.ai). Currently is supports turning on and off several
 entity types (`light`, `switch`, `scene`, `groups` and `input_boolean`).
