@@ -7,3 +7,5 @@
 /.pydevproject
 /.project
 .idea/preferred-vcs.xml
+/.idea/vcs.xml
+/venv*
