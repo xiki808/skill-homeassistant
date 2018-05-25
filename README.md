@@ -43,6 +43,9 @@ pip install -r requirements.txt
 Note: python-Levenshtein requires python-dev to be installed.
 ```sudo apt-get install python-dev```
 
+## Demo Home Assistant
+You can see a demo of Home Assistant at http://167.99.144.205:8123 using the password "password".  You can also plug these settings into the home.mycroft.ai skill setting mentioned below to test your mycroft instance with the demo instance of home assistant.
+
 ## Configuration
 This skill utilizes the skillsettings.json file which allows you to configure this skill via home.mycroft.ai after a few minutes of having the skill installed you should see something like below in the https://home.mycroft.ai/#/skill location:
 
