@@ -9,3 +9,6 @@
 .idea/preferred-vcs.xml
 /.idea/vcs.xml
 /venv*
+/test/integrationtests*
+/settings.json
+/skill_developers_testrunner.py
