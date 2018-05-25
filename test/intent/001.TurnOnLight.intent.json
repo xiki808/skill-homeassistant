@@ -1,0 +1,4 @@
+{
+  "utterance": "turn on the office light",
+  "expected_dialog": "homeassistant.device.on"
+}
