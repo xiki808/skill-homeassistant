@@ -23,7 +23,6 @@ install:
  
     
 script:
-- |
  - pep8 __init__.py
  - source $VIRTUAL_ENV/bin/activate
  - pwd
