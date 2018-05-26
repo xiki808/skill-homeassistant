@@ -12,11 +12,10 @@ python:
 
 cache: pocketsphinx-python
 install:
- - pwd
- - ls -lah
  - VIRTUALENV_ROOT=${VIRTUAL_ENV} ./mycroft-core/dev_setup.sh -sm
  - source $VIRTUAL_ENV/bin/activate
  - pwd
+ - ls -lah
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
  - ~/virtualenv/python3.4/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
