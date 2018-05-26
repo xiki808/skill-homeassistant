@@ -173,6 +173,8 @@ class HomeAssistantSkill(FallbackSkill):
             portnumber = self.settings.get('portnum')
             try:
                 portnumber = int(portnumber)
+            except TypeError:
+                portnumber = 8123
             except ValueError:
                 # String might be some rubbish (like '')
                 portnumber = 0
