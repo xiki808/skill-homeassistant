@@ -2,7 +2,6 @@
 
 [![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) 
 [![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
-[![](https://geek-slack-invite.herokuapp.com/badge.svg)](https://geek-slack-invite.herokuapp.com)
 [![Discord](https://img.shields.io/discord/348442860510642176.svg)](https://discord.gg/Xnn89dB)
 
 
@@ -21,9 +20,10 @@ entity types (`light`, `switch`, `scene`, `groups` and `input_boolean`).
 ## Support/Help
 You can always find me in the mycroft mattermost channel here, https://chat.mycroft.ai
 
+If you want to join my official discord where I will have a chatbot helper and more you can join via https://discord.gg/Xnn89dB
+
 If you like this and want to say thanks check out my [Patreon](https://www.patreon.com/Geekedoutsol) I also include special posts here for my Patrons.
 
-You can also join my slack server at https://geek-slack-invite.herokuapp.com
 
 ## Installation
 Before installation ensure you have python-dev package installed for your OS.  For debian this would be `apt-get install python-dev` it is required for the levenstein package.
@@ -120,3 +120,5 @@ See [`LICENCE`](https://gitlab.com/robconnolly/mycroft-home-assistant/blob/maste
 If you liked this project, you can donate to support it and new features
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brianhh1230%40gmail%2ecom&lc=US&item_name=Geeked%20Out%20Solutions&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
+
+Or become a [Patreon](https://www.patreon.com/Geekedoutsol)
