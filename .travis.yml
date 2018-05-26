@@ -20,7 +20,7 @@ install:
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
  - ~/virtualenv/python3.4/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
- - chmod u+x test/run_test.py
+ - chmod u+x test/run_test.sh
  - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
 
  
@@ -28,7 +28,7 @@ install:
 script:
  - pep8 __init__.py
  - pwd
- - ./test/run_test.py
+ - ./test/run_test.sh
 
 env:
 - IS_TRAVIS=true
