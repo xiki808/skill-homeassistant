@@ -17,14 +17,14 @@ install:
  - VIRTUALENV_ROOT=${VIRTUAL_ENV} ./mycroft-core/dev_setup.sh -sm
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
- - ~/virtualenv/python3.4/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
+ - $VIRTUALENV_ROOT/msm install https://github.com/btotharye/mycroft-homeassistant.git
  
     
 script:
  - pep8 __init__.py
  - ls $VIRTUAL_ENV
  - ls /opt/mycroft
- - source $VIRTUAL_ENV/bin/activate
+ - source $VIRTUALENV_ROOT/bin/activate
  - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant
  - python /opt/mycroft/skills/mycroft-homeassistant/skill_developers_testrunner.py
 
