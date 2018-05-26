@@ -162,11 +162,11 @@ class HomeAssistantSkill(FallbackSkill):
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self.enable_fallback = False
-        try:
-            self.settings.set_changed_callback(self._force_setup)
-        except BaseException:
-            LOGGER.debug(
-                'No auto-update on changed settings (Outdated version)')
+        #try:
+        #    self.settings.set_changed_callback(self._force_setup)
+        #except BaseException:
+        #    LOGGER.debug(
+        #        'No auto-update on changed settings (Outdated version)')
 
     def _setup(self, force=False):
         if self.settings is not None and (force or self.ha is None):
