@@ -23,7 +23,7 @@ install:
 script:
  - pep8 __init__.py
  - ls $VIRTUAL_ENV
- - ls /opt/mycroft
+ - ls /opt/mycroft/skills
  - source $VIRTUALENV_ROOT/bin/activate
  - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant
  - python /opt/mycroft/skills/mycroft-homeassistant/skill_developers_testrunner.py
