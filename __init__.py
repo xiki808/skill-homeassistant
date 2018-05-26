@@ -139,8 +139,8 @@ class HomeAssistantClient(object):
               'extra_data': ...}
         """
         data = {
-             "text": utterance
-             }
+            "text": utterance
+        }
         if self.ssl:
             return post("%s/api/conversation/process" % (self.url),
                         headers=self.headers,
@@ -179,13 +179,13 @@ class HomeAssistantSkill(FallbackSkill):
                 portnumber,
                 self.settings.get('ssl') == 'true',
                 self.settings.get('verify') == 'true'
-                )
+            )
             if self.ha:
                 # Check if conversation component is loaded at HA-server
                 # and activate fallback accordingly (ha-server/api/components)
                 # TODO: enable other tools like dialogflow
                 if (self.ha.find_component('conversation') and
-                   self.settings.get('enable_fallback') == 'true'):
+                        self.settings.get('enable_fallback') == 'true'):
                     self.enable_fallback = True
 
     def _force_setup(self):
@@ -206,7 +206,7 @@ class HomeAssistantSkill(FallbackSkill):
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
         self.settings.set_changed_callback(self.on_websettings_changed)
- 
+
     def on_websettings_changed(self):
         # Only attempt to load if the host is set
         if self.settings.get('host', None):
@@ -411,9 +411,9 @@ class HomeAssistantSkill(FallbackSkill):
         elif "IncreaseVerb" in message.data or \
                 "LightBrightenVerb" in message.data:
             if ha_entity['state'] == "off":
-                    self.speak_dialog(
-                        'homeassistant.brightness.cantdim.off',
-                        data=ha_entity)
+                self.speak_dialog(
+                    'homeassistant.brightness.cantdim.off',
+                    data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 if light_attrs[0] is None:
@@ -515,18 +515,18 @@ class HomeAssistantSkill(FallbackSkill):
 
         if quantulumImport and unit_measurement != '':
             quantity = parser.parse((u'{} is {} {}'.format(
-                              sensor_name, sensor_state, sensor_unit)))
+                sensor_name, sensor_state, sensor_unit)))
             if len(quantity) > 0:
                 quantity = quantity[0]
                 if (quantity.unit.name != "dimensionless" and
-                   quantity.uncertainty <= 0.5):
+                        quantity.uncertainty <= 0.5):
                     sensor_unit = quantity.unit.name
                     sensor_state = quantity.value
 
         self.speak_dialog('homeassistant.sensor', data={
-                      "dev_name": sensor_name,
-                      "value": sensor_state,
-                      "unit": sensor_unit})
+            "dev_name": sensor_name,
+            "value": sensor_state,
+            "unit": sensor_unit})
         # IDEA: Add some context if the person wants to look the unit up
         # Maybe also change to name
         # if one wants to look up "outside temperature"
