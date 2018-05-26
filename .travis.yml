@@ -25,7 +25,8 @@ script:
  - ls $VIRTUAL_ENV
  - ls ${VIRTUAL_ENV}
  - source $VIRTUAL_ENV/bin/activate
- - python $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/single_test.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
+ - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant
+ - python /opt/mycroft/skills/mycroft-homeassistant/skill_developers_testrunner.py
 
 env:
 - IS_TRAVIS=true
