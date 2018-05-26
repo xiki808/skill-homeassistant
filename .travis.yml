@@ -24,4 +24,4 @@ script:
  - pep8 __init__.py
  - pwd
  - ls -lah
- - python $pwd/mycroft-core/test/integrationtest/skills/single_test.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
+ - python $PWD/mycroft-core/test/integrationtest/skills/single_test.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
