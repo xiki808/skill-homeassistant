@@ -14,7 +14,7 @@ cache: pocketsphinx-python
 install:
  - pwd
  - ls -lah
- - VIRTUALENV_ROOT=${VIRTUAL_ENV} ./mycroft-core/dev_setup.sh
+ - VIRTUALENV_ROOT=${VIRTUAL_ENV} ./mycroft-core/dev_setup.sh -sm
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
  - mycroft-core/mycroft/msm install https://github.com/btotharye/mycroft-homeassistant.git
