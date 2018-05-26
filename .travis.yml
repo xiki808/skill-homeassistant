@@ -22,4 +22,4 @@ install:
     
 script:
  - pep8 __init__.py
- - python /$pwd/test/integrationtest/skills/single_test.py /opt/mycroft/skills/mycroft-home-automation.bthotharye
+ - python /$pwd/test/integrationtest/skills/single_test.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
