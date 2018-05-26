@@ -12,6 +12,7 @@ python:
 
 cache: pocketsphinx-python
 install:
+- |
  - VIRTUALENV_ROOT=${VIRTUAL_ENV} ./mycroft-core/dev_setup.sh -sm
  - source $VIRTUAL_ENV/bin/activate
  - pwd
@@ -22,6 +23,7 @@ install:
  
     
 script:
+- |
  - pep8 __init__.py
  - source $VIRTUAL_ENV/bin/activate
  - pwd
