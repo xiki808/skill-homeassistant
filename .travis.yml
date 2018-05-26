@@ -17,6 +17,8 @@ install:
  - VIRTUALENV_ROOT=${VIRTUAL_ENV} ./mycroft-core/dev_setup.sh
  - pip install -r /mycroft-core/requirements.txt
  - pip install -r /mycroft-core/test-requirements.txt
+ - /mycroft-core/mycroft/msm install https://github.com/btotharye/mycroft-homeassistant.git
+ - python /mycroft-core/test/integrationtest/skills/single_test.py /opt/mycroft/skills/mycroft-home-automation.bthotharye
     
 script:
  - pep8 __init__.py
