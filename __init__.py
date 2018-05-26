@@ -196,7 +196,6 @@ class HomeAssistantSkill(FallbackSkill):
         self.language = self.config_core.get('lang')
         self.load_vocab_files(join(dirname(__file__), 'vocab', self.lang))
         self.load_regex_files(join(dirname(__file__), 'regex', self.lang))
-        self._setup()
         self.__build_switch_intent()
         self.__build_light_set_intent()
         self.__build_light_adjust_intent()
@@ -205,6 +204,16 @@ class HomeAssistantSkill(FallbackSkill):
         self.__build_tracker_intent()
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
+        # Check and then monitor for credential changes
+        self.settings.set_changed_callback(self.on_websettings_changed)
+        
+    def on_websettings_changed(self):
+        # Only attempt to load if the host is set
+        if self.settings.get('host', None):
+            try:
+                self._setup()
+            except Exception:
+                pass
 
     def __build_switch_intent(self):
         intent = IntentBuilder("switchIntent").require("SwitchActionKeyword") \
