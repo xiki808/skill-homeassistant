@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 source $VIRTUAL_ENV/bin/activate
 pwd
 ls -lah
