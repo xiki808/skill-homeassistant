@@ -1,5 +1,4 @@
 #!/bin/bash
-source $VIRTUAL_ENV/bin/activate
+source ~/virtualenv/python3.4/bin/activate
 pwd
-ls -lah
 python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
