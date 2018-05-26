@@ -22,5 +22,4 @@ install:
     
 script:
  - pep8 __init__.py
- - ls -lah $TRAVIS_BUILD_DIR/mycroft-core/test
- - python $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtest/skills/single_test.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
+ - python $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/single_test.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
