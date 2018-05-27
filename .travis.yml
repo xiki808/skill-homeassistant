@@ -11,13 +11,12 @@ python:
 
 cache: pocketsphinx-python
 install:
- - VIRTUALENV_ROOT=~/virtualenv/python3.6 ./mycroft-core/dev_setup.sh -sm
+ - VIRTUALENV_ROOT=${~/$TRAVIS_BUILD_DIR/mycroft-core} ./mycroft-core/dev_setup.sh -sm
  - pwd
- - ls -lah ~/virtualenv/python3.6
  - ls -lah $TRAVIS_BUILD_DIR/mycroft-core
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
- - ~/virtualenv/python3.6/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
+ - $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
  - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
 
  
@@ -25,7 +24,7 @@ install:
 script:
  - pep8 __init__.py
  - pwd
- - ~/virtualenv/python3.6/bin/python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
+ - $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
 
 env:
 - IS_TRAVIS=true
