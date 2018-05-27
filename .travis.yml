@@ -14,6 +14,7 @@ install:
  - VIRTUALENV_ROOT=~/virtualenv ./mycroft-core/dev_setup.sh -sm
  - pwd
  - ls -lah ~/virtualenv
+ - ls -lah $TRAVIS_BUILD_DIR/mycroft-core
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
  - ~/virtualenv/python3.6/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
