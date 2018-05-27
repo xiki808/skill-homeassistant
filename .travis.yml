@@ -5,7 +5,6 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq mpg123 portaudio19-dev libglib2.0-dev swig bison libtool autoconf libglib2.0-dev libicu-dev libfann-dev realpath
   - ls ~/virtualenv
-  - source ~/virtualenv/python3.6/bin/activate
 python:
   - "3.6"
 
@@ -14,9 +13,10 @@ install:
  - ./mycroft-core/dev_setup.sh -sm
  - pwd
  - echo $VIRTUALENV_ROOT
- - ls -lah $TRAVIS_BUILD_DIR/mycroft-core
+ - ls -lah $TRAVIS_BUILD_DIR/mycroft-core/.venv
  - pip install -r mycroft-core/requirements.txt
  - pip install -r mycroft-core/test-requirements.txt
+ - source $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/activate
  - $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
  - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
 
