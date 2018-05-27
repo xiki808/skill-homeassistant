@@ -1,10 +1,12 @@
 language: python
 before_install:
   - pip install pep8
+  - pip install pytest-cov
+  - pip install python-coveralls
 python:
   - "3.6"
 script:
  - pep8 __init__.py
- - pytest test/unittests -v
+ - py.test --cov ha_client unittests -v
 after_success:
   coveralls
