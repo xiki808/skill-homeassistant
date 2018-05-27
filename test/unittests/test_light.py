@@ -1,7 +1,4 @@
 from unittest import TestCase
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-
 from ha_client import HomeAssistantClient
 
 kitchen_light = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
