@@ -1,6 +1,4 @@
 language: python
-virtualenv:
-  system_site_packages: true
 before_install:
   - pip install pep8
   - git clone https://github.com/MycroftAI/mycroft-core.git
@@ -26,8 +24,7 @@ install:
     
 script:
  - pep8 __init__.py
- - pwd
- - ./test/run_test.sh
+
 
 after_success:
   coveralls
