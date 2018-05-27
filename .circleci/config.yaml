@@ -26,6 +26,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            cd ~/repo
             git clone https://github.com/MycroftAI/mycroft-core.git
             ls -lah $VIRTUAL_ENV
             pip install pep8
@@ -47,7 +48,7 @@ jobs:
           name: run tests
           command: |
             pep8 __init__.py
-            $CIRCLE_WORKING_DIRECTORY/mycroft-core/venv/bin/activate
+            ~/repo/mycroft-core/venv/bin/activate
             python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
             
           
