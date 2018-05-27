@@ -25,7 +25,7 @@ install:
 script:
  - pep8 __init__.py
  - pwd
- - ./run_test.
+ - ./test/run_test.sh
 
 env:
 - IS_TRAVIS=true
