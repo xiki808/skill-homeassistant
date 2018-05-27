@@ -5,6 +5,6 @@ python:
   - "3.6"
 script:
  - pep8 __init__.py
- - py.test -v test/unittests
+ - pytest test/unittests -v
 after_success:
   coveralls
