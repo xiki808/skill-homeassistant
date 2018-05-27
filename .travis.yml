@@ -1,6 +1,5 @@
 language: python
 before_install:
-  - pip install pep8
   - git clone https://github.com/MycroftAI/mycroft-core.git
   - sudo apt-get update -qq
   - sudo apt-get install -qq mpg123 portaudio19-dev libglib2.0-dev swig bison libtool autoconf libglib2.0-dev libicu-dev libfann-dev realpath
@@ -9,6 +8,8 @@ before_install:
   - pip install -r mycroft-core/requirements.txt
   - pip install -r mycroft-core/test-requirements.txt
   - source $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/activate
+  - pip install pep8
+  - ls -lah
 python:
   - "3.6"
 
