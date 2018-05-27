@@ -10,7 +10,9 @@
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
 # Updates
-Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.  I'm working on updating the code to also work for when you update the values from the site should be done in a few days.
+Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.
+
+Testrunner tests are now setup as well to test intents.  Currently have PR https://github.com/MycroftAI/mycroft-skills/pull/363 in place to add skill as official skill for 18.02 branch.
 
 
 This is a skill to add [Home Assistant](https://home-assistant.io) support to
@@ -98,7 +100,7 @@ Currently the phrases are:
  * New intent for opening/closing cover entities
  * New intent for locking/unlocking lock entities (with added security?)
  * New intent for thermostat values, raising, etc.
- * ...
+ * New intent to handle multimedia/kodi
 
 ## In Development
 * Climate and Weather intents
