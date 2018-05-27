@@ -26,7 +26,7 @@ install:
     
 script:
  - pep8 __init__.py
- - python3 /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
+ - py.test -v
 
 after_success:
   coveralls
