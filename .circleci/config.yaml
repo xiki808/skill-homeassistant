@@ -29,11 +29,10 @@ jobs:
             git clone https://github.com/MycroftAI/mycroft-core.git
             ls -lah $VIRTUAL_ENV
             pip install pep8
-            
             cd mycroft-core
             sudo apt-get update -qq
             sudo apt-get install -qq mpg123 portaudio19-dev libglib2.0-dev swig bison libtool autoconf libglib2.0-dev libicu-dev libfann-dev realpath
-            VIRTUALENV_ROOT=./venv ./dev_setup.sh
+            ./dev_setup.sh
             pip install -r requirements.txt
             pip install -r test-requirements
             cp mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
@@ -47,7 +46,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
+            $CIRCLE_WORKING_DIRECTORY/mycroft-core/venv/bin/activate
             pep8 mycroft test
             python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
             
