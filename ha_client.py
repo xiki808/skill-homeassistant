@@ -100,12 +100,14 @@ class HomeAssistantClient(object):
 
     def execute_service(self, domain, service, data):
         if self.ssl:
-            post("%s/api/services/%s/%s" % (self.url, domain, service),
-                 headers=self.headers, data=json.dumps(data),
-                 verify=self.verify, timeout=TIMEOUT)
+            r = post("%s/api/services/%s/%s" % (self.url, domain, service),
+                     headers=self.headers, data=json.dumps(data),
+                     verify=self.verify, timeout=TIMEOUT)
+            return r
         else:
-            post("%s/api/services/%s/%s" % (self.url, domain, service),
-                 headers=self.headers, data=json.dumps(data), timeout=TIMEOUT)
+            r = post("%s/api/services/%s/%s" % (self.url, domain, service),
+                     headers=self.headers, data=json.dumps(data), timeout=TIMEOUT)
+            return r
 
     def find_component(self, component):
         """Check if a component is loaded at the HA-Server"""
