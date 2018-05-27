@@ -46,8 +46,8 @@ jobs:
       - run:
           name: run tests
           command: |
+            pep8 __init__.py
             $CIRCLE_WORKING_DIRECTORY/mycroft-core/venv/bin/activate
-            pep8 mycroft test
             python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
             
           
