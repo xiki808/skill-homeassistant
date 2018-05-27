@@ -11,7 +11,7 @@ python:
 
 cache: pocketsphinx-python
 install:
- - VIRTUALENV_ROOT=$TRAVIS_BUILD_DIR/mycroft-core ./mycroft-core/dev_setup.sh -sm
+ - ./mycroft-core/dev_setup.sh -sm
  - pwd
  - echo $VIRTUALENV_ROOT
  - ls -lah $TRAVIS_BUILD_DIR/mycroft-core
