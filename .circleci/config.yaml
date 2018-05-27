@@ -26,13 +26,14 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            git clone https://github.com/MycroftAI/mycroft-core.git
             ls -lah $VIRTUAL_ENV
             pip install pep8
-            git clone https://github.com/MycroftAI/mycroft-core.git
+            
             cd mycroft-core
             sudo apt-get update -qq
             sudo apt-get install -qq mpg123 portaudio19-dev libglib2.0-dev swig bison libtool autoconf libglib2.0-dev libicu-dev libfann-dev realpath
-            VIRTUALENV_ROOT=${VIRTUAL_ENV} ./dev_setup.sh
+            VIRTUALENV_ROOT=./venv ./dev_setup.sh
             pip install -r requirements.txt
             pip install -r test-requirements
             cp mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
@@ -43,17 +44,13 @@ jobs:
           key: v1-dependencies-{{ checksum "requirements.txt" }}
         
       # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
       - run:
           name: run tests
           command: |
+            . venv/bin/activate
             pep8 mycroft test
             python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
             
-
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
+          
+      - store_test_results:
+          path: test-reports/
