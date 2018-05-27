@@ -19,12 +19,12 @@ install:
  - ~/virtualenv/python3.6/bin/msm install https://github.com/btotharye/mycroft-homeassistant.git
  - chmod u+x test/run_test.sh
  - cp $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests/skills/skill_developers_testrunner.py /opt/mycroft/skills/mycroft-homeassistant.btotharye
-
+ - cp -R $TRAVIS_BUILD_DIR/mycroft-core/test/integrationtests /opt/mycroft/skills/mycroft-homeassistant.btotharye/test
  
     
 script:
  - pep8 __init__.py
-
+ - $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
 
 after_success:
   coveralls
