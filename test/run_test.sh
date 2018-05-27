@@ -1,4 +1,3 @@
 #!/bin/bash
-source ~/virtualenv/python3.4/bin/activate
-pwd
-python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
+source $TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/activate
+$TRAVIS_BUILD_DIR/mycroft-core/.venv/bin/python /opt/mycroft/skills/mycroft-homeassistant.btotharye/skill_developers_testrunner.py
