@@ -4,7 +4,7 @@ before_install:
   - git clone https://github.com/MycroftAI/mycroft-core.git
   - sudo apt-get update -qq
   - sudo apt-get install -qq mpg123 portaudio19-dev libglib2.0-dev swig bison libtool autoconf libglib2.0-dev libicu-dev libfann-dev realpath
-  - ls /opt/python/3.6/bin
+  - ls /opt/python
   - source /opt/python/3.6/bin/activate
 python:
   - "3.6"
