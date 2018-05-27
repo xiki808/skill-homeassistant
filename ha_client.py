@@ -1,6 +1,4 @@
-from os.path import dirname, join
 from requests import get, post
-from requests.exceptions import ConnectionError
 from fuzzywuzzy import fuzz
 import json
 
