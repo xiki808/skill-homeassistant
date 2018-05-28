@@ -13,6 +13,7 @@ class HomeAssistantClient(object):
         self.ssl = ssl
         self.verify = verify
         if portnum is None or portnum == 0:
+            self.portnum = 8123
             portnum = 8123
         if self.ssl:
             self.url = "https://%s:%d" % (host, portnum)
