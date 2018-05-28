@@ -5,7 +5,7 @@ from mycroft.util.log import getLogger
 from os.path import dirname, join
 from requests.exceptions import ConnectionError
 
-from ha_client import HomeAssistantClient
+from .ha_client import HomeAssistantClient
 
 __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
