@@ -36,6 +36,7 @@ class HomeAssistantClient(object):
             # require a score above 50%
             best_score = 50
             best_entity = None
+            print(req.json())
             for state in req.json():
                 try:
                     if state['entity_id'].split(".")[0] in types:
