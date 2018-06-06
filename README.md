@@ -41,20 +41,11 @@ Or become a [Patreon](https://www.patreon.com/Geekedoutsol) - I offer special po
 ## Installation
 Before installation ensure you have python-dev package installed for your OS.  For debian this would be `apt-get install python-dev` it is required for the levenstein package.
 
-Clone the repository into your `~/.mycroft/skills` directory. Then install the
-dependencies inside your mycroft virtual environment:
 
-If on picroft just skip the workon part and the directory will be /opt/mycroft/skills
+Should be able to install this now via just saying `Hey Mycroft, install skill home assistant` it will then confirm if you want to install it and say yes and you are good to go.
 
-```
-cd ~/.mycroft/skills
-git clone https://github.com/btotharye/mycroft-homeassistant HomeAssistantSkill
-workon mycroft
-cd HomeAssistantSkill
-pip install -r requirements.txt
-```
-Note: python-Levenshtein requires python-dev to be installed.
-```sudo apt-get install python-dev```
+Can also be installed via `msm install https://github.com/btotharye/mycroft-homeassistant.git`
+
 
 ## Demo Home Assistant
 You can see a demo of Home Assistant at http://167.99.144.205:8123 using the password "password".  You can also plug these settings into the home.mycroft.ai skill setting mentioned below to test your mycroft instance with the demo instance of home assistant.
