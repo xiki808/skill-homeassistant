@@ -7,6 +7,6 @@ python:
   - "3.6"
 script:
  - pep8 __init__.py
- - py.test --cov ha_client unittests -v
+ - py.test --cov unittests -v
 after_success:
   coveralls
