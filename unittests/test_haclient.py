@@ -2,7 +2,8 @@ from unittest import TestCase
 from ha_client import HomeAssistantClient
 import unittest
 from unittest import mock
-
+from urllib3 import exceptions
+from requests.exceptions import SSLError
 
 kitchen_light = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
 
@@ -31,13 +32,15 @@ class TestHaClient(TestCase):
         mock_resp.json = mock.Mock(return_value=json_data)
         return mock_resp
 
-    @mock.patch('ha_client.get')
-    def test_connect_ssl(self, mock_ha):
+    @mock.patch('ha_client.HomeAssistantClient.find_entity')
+    def test_connect_ssl(self, mock_get):
         portnum = None
         ssl = True
         ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
+        print(ha.url)
         mock_resp = self._mock_response(json_data=json_data)
         print(mock_resp.json())
+        print(mock_resp.status)
         self.assertEqual(mock_resp.json(), json_data)
         self.assertEqual(ha.portnum, 8123)
 
@@ -48,6 +51,7 @@ class TestHaClient(TestCase):
         entity = (ha.find_entity('kitchen', 'light'))
         if entity['best_score'] >= 50:
             print(entity['best_score'])
+            print(entity)
             self.assertTrue(True)
         light_attr = ha.find_entity_attr(entity['id'])
 
