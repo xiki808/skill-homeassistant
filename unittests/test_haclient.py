@@ -2,8 +2,7 @@ from unittest import TestCase
 from ha_client import HomeAssistantClient
 import unittest
 from unittest import mock
-import responses
-import requests
+
 
 kitchen_light = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
 
@@ -18,12 +17,18 @@ attr_resp = {
             "id": '1',
             "dev_name": {'attributes': {'friendly_name': 'Kitchen Lights', 'max_mireds': 500, 'min_mireds': 153, 'supported_features': 151}, 'entity_id': 'light.kitchen_lights', 'state': 'off'}}
 
+headers = {
+    'x-ha-access': 'password',
+    'Content-Type': 'application/json'
+}
+
 class TestHaClient(TestCase):
 
     @mock.patch('requests.get')
     def test_light_ssl(self, mock_get):
         portnum = None
-        ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=True)
+        ssl=True
+        ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
         mock_resp = mock.Mock()
         mock_resp.status_code = 200
         mock_resp.json = mock.Mock(return_value=json_data)
@@ -36,6 +41,8 @@ class TestHaClient(TestCase):
             self.assertTrue(True)
         self.assertEqual(ha.portnum, 8123)
         self.assertEqual(ha.url, 'https://192.168.0.1:8123')
+        self.assertEqual(ha.ssl, ssl)
+        self.assertEqual(headers, ha.headers)
 
     @mock.patch('requests.get')
     def test_light_nossl(self, mock_get):
@@ -52,6 +59,7 @@ class TestHaClient(TestCase):
             self.assertTrue(True)
         self.assertEqual(ha.portnum, 8123)
         self.assertEqual(ha.url, 'http://192.168.0.1:8123')
+        self.assertEqual(mock_resp.status_code, 200)
 
     @mock.patch('ha_client.HomeAssistantClient.find_entity')
     def test_toggle_lights(self, mock_get):
