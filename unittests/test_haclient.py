@@ -25,16 +25,19 @@ headers = {
 
 class TestHaClient(TestCase):
 
+    def _mock_response(self, status=200, json_data=None):
+        mock_resp = mock.Mock()
+        mock_resp.status_code = status
+        mock_resp.json = mock.Mock(return_value=json_data)
+        return mock_resp
+
     @mock.patch('ha_client.get')
-    def test_connect_ssl(self, mock_get):
+    def test_connect_ssl(self):
         portnum = None
         ssl = True
         ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
-        mock_resp = mock.Mock()
-        mock_resp.status_code = 200
-        mock_resp.json = mock.Mock(return_value=json_data)
-        mock_get.return_value = mock_resp
-        print(mock_get.return_value)
+        mock_resp = self._mock_response(json_data=json_data)
+        print(mock_resp.json())
         self.assertEqual(mock_resp.json(), json_data)
         self.assertEqual(ha.portnum, 8123)
 
@@ -44,7 +47,6 @@ class TestHaClient(TestCase):
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
         entity = (ha.find_entity('kitchen', 'light'))
         if entity['best_score'] >= 50:
-            print(entity)
             print(entity['best_score'])
             self.assertTrue(True)
         light_attr = ha.find_entity_attr(entity['id'])
@@ -64,7 +66,7 @@ class TestHaClient(TestCase):
                     self.assertEqual(entity,
                                      {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'off',
                                       'best_score': 100})
-                    self.assertEqual(light_attr['unit_measure'], None)
+                    self.assertEqual(light_attr['unit_measure'], 180)
                 if entity['best_score'] >= 50:
                     self.assertTrue(True)
         else:
