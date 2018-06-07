@@ -48,11 +48,9 @@ class TestHaClient(TestCase):
             print(entity['best_score'])
             self.assertTrue(True)
         light_attr = ha.find_entity_attr(entity['id'])
-        self.assertEqual(light_attr['unit_measure'], 180)
+
         self.assertEqual(light_attr['name'], 'Kitchen Lights')
         self.assertEqual(entity['dev_name'], 'Kitchen Lights')
-        self.assertEqual(entity,
-                         {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'on', 'best_score': 67})
         self.assertEqual(ha.ssl, False)
         self.assertEqual(ha.portnum, 8123)
         ha_data = {'entity_id': entity['id']}
@@ -63,6 +61,10 @@ class TestHaClient(TestCase):
                 entity = ha.find_entity(light_attr['name'], 'light')
                 if entity['state'] == 'off':
                     self.assertTrue(True)
+                    self.assertEqual(entity,
+                                     {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'off',
+                                      'best_score': 100})
+                    self.assertEqual(light_attr['unit_measure'], None)
                 if entity['best_score'] >= 50:
                     self.assertTrue(True)
         else:
@@ -72,6 +74,10 @@ class TestHaClient(TestCase):
                 if entity['state'] == 'on':
                     self.assertTrue(True)
                     self.assertEqual(light_attr['state'], 'on')
+                    self.assertEqual(entity,
+                                     {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'on',
+                                      'best_score': 100})
+                    self.assertEqual(light_attr['unit_measure'], 180)
 
 
 
