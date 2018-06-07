@@ -99,7 +99,12 @@ class HomeAssistantClient(object):
                     # free use within handle methods
                     sensor_name = entity_attrs['friendly_name']
                     sensor_state = attr['state']
-                    return unit_measur, sensor_name, sensor_state
+                    entity_attr = {
+                        "unit_measure": unit_measur,
+                        "name": sensor_name,
+                        "state": sensor_state
+                    }
+                    return entity_attr
         return None
 
     def execute_service(self, domain, service, data):

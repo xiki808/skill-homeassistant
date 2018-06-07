@@ -250,12 +250,12 @@ class HomeAssistantSkill(FallbackSkill):
                                   data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
-                if light_attrs[0] is None:
+                if light_attrs['unit_measure'] is None:
                     self.speak_dialog(
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
                 else:
-                    ha_data['brightness'] = light_attrs[0]
+                    ha_data['brightness'] = light_attrs['unit_measure']
                     if ha_data['brightness'] < brightness_value:
                         ha_data['brightness'] = 10
                     else:
@@ -274,12 +274,12 @@ class HomeAssistantSkill(FallbackSkill):
                     data=ha_entity)
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
-                if light_attrs[0] is None:
+                if light_attrs['unit_measure'] is None:
                     self.speak_dialog(
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
                 else:
-                    ha_data['brightness'] = light_attrs[0]
+                    ha_data['brightness'] = light_attrs['unit_measure']
                     if ha_data['brightness'] > brightness_value:
                         ha_data['brightness'] = 255
                     else:

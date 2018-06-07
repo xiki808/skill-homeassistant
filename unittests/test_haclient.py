@@ -46,6 +46,11 @@ class TestHaClient(TestCase):
         if entity['best_score'] >= 50:
             print(entity['best_score'])
             self.assertTrue(True)
+        light_attr = ha.find_entity_attr(entity['id'])
+        print(light_attr['state'])
+        self.assertEqual(light_attr['state'], 'on')
+        self.assertEqual(light_attr['unit_measure'], 180)
+        self.assertEqual(light_attr['name'], 'Kitchen Lights')
         self.assertEqual(entity['dev_name'], 'Kitchen Lights')
         self.assertEqual(ha.ssl, False)
         self.assertEqual(ha.portnum, 8123)
