@@ -26,27 +26,23 @@ headers = {
 
 class TestHaClient(TestCase):
 
-    def _mock_response(self, status=200, json_data=None):
-        mock_resp = mock.Mock()
-        mock_resp.status_code = status
-        mock_resp.json = mock.Mock(return_value=json_data)
-        return mock_resp
+    def test_mock_ssl(self):
+        with mock.patch('requests.get') as mock_request:
+            portnum = 8123
+            ssl = True
+            url = 'https://192.168.0.1:8123'
 
-    @mock.patch('ha_client.HomeAssistantClient.find_entity')
-    def test_connect_ssl(self, mock_get):
-        portnum = None
-        ssl = True
-        ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
-        mock_resp = self._mock_response(json_data=json_data)
-        self.assertEqual(mock_resp.json(), json_data)
-        self.assertEqual(ha.portnum, 8123)
+            mock_request.return_value.status_code = 200
+            self.assertTrue(url, 'https://192.168.0.1:8123')
+            self.assertTrue(portnum, 8123)
+            self.assertTrue(ssl, True)
+            self.assertTrue(mock_request.return_value.status_code, 200)
 
     def test_broke_entity(self):
         portnum = None
         ssl = False
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
         self.assertRaises(KeyError, ha.find_entity('b', 'cover'))
-
 
     def test_light_nossl(self):
         portnum = None
