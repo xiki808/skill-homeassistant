@@ -9,6 +9,8 @@
 
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
+See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home-automation for a general overview of Mycroft AI and Home Assistant
+
 # Updates
 Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.
 
@@ -26,24 +28,24 @@ If you want to join my official discord where I will have a chatbot helper and m
 
 If you like this and want to say thanks check out my [Patreon](https://www.patreon.com/Geekedoutsol) I also include special posts here for my Patrons.
 
+## Donate
+
+If you liked this project, you can donate to support it and new features and also help me justify spending more time on this project.
+
+You can donate directly via my [Blog](https://geekedoutsolutions.com/donations/geeked-out-donation) or any of the other options listed below.
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brianhh1230%40gmail%2ecom&lc=US&item_name=Geeked%20Out%20Solutions&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
+
+Or become a [Patreon](https://www.patreon.com/Geekedoutsol) - I offer special posts and tutorials to my Patreons that aren't public.
 
 ## Installation
 Before installation ensure you have python-dev package installed for your OS.  For debian this would be `apt-get install python-dev` it is required for the levenstein package.
 
-Clone the repository into your `~/.mycroft/skills` directory. Then install the
-dependencies inside your mycroft virtual environment:
 
-If on picroft just skip the workon part and the directory will be /opt/mycroft/skills
+Should be able to install this now via just saying `Hey Mycroft, install skill home assistant` it will then confirm if you want to install it and say yes and you are good to go.
 
-```
-cd ~/.mycroft/skills
-git clone https://github.com/btotharye/mycroft-homeassistant HomeAssistantSkill
-workon mycroft
-cd HomeAssistantSkill
-pip install -r requirements.txt
-```
-Note: python-Levenshtein requires python-dev to be installed.
-```sudo apt-get install python-dev```
+Can also be installed via `msm install https://github.com/btotharye/mycroft-homeassistant.git`
+
 
 ## Demo Home Assistant
 You can see a demo of Home Assistant at http://167.99.144.205:8123 using the password "password".  You can also plug these settings into the home.mycroft.ai skill setting mentioned below to test your mycroft instance with the demo instance of home assistant.
@@ -116,11 +118,3 @@ All contributions welcome:
 ## Licence
 
 See [`LICENCE`](https://gitlab.com/robconnolly/mycroft-home-assistant/blob/master/LICENSE).
-
-## Donate
-
-If you liked this project, you can donate to support it and new features
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brianhh1230%40gmail%2ecom&lc=US&item_name=Geeked%20Out%20Solutions&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
-
-Or become a [Patreon](https://www.patreon.com/Geekedoutsol)
