@@ -32,7 +32,7 @@ class TestHaClient(TestCase):
         return mock_resp
 
     @mock.patch('ha_client.get')
-    def test_connect_ssl(self):
+    def test_connect_ssl(self, mock_ha):
         portnum = None
         ssl = True
         ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
