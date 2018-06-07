@@ -26,11 +26,18 @@ headers = {
 class TestHaClient(TestCase):
 
     @mock.patch('requests.get')
-    def test_connect(self, mock_get):
+    def test_connect_ssl(self, mock_get):
         portnum = None
         ssl = True
         ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
         self.assertEqual(ha.portnum, 8123)
+
+    @mock.patch('requests.get')
+    def test_connect_nossl(self, mock_get):
+        portnum = None
+        ssl = False
+        ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
+        self.assertEqual(headers, ha.headers)
 
     @mock.patch('ha_client.HomeAssistantClient.find_entity')
     def test_toggle_lights(self, mock_get):
