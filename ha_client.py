@@ -53,7 +53,8 @@ class HomeAssistantClient(object):
                                 "id": state['entity_id'],
                                 "dev_name": state['attributes']
                                 ['friendly_name'],
-                                "state": state['state']}
+                                "state": state['state'],
+                                "best_score": best_score}
                         score = fuzz.token_sort_ratio(
                             entity,
                             state['entity_id'].lower())
@@ -63,7 +64,8 @@ class HomeAssistantClient(object):
                                 "id": state['entity_id'],
                                 "dev_name": state['attributes']
                                 ['friendly_name'],
-                                "state": state['state']}
+                                "state": state['state'],
+                                "best_score": best_score}
                 except KeyError:
                     pass
             return best_entity
