@@ -65,6 +65,9 @@ class TestHaClient(TestCase):
         self.assertEqual(entity['dev_name'], 'Kitchen Lights')
         self.assertEqual(ha.ssl, False)
         self.assertEqual(ha.portnum, 8123)
+        convo = ha.engage_conversation('turn off kitchen light')
+        self.assertEqual(convo, {'extra_data': None, 'speech': 'Turned Kitchen Lights off'})
+        print(convo)
         ha_data = {'entity_id': entity['id']}
         if light_attr['state'] == 'on':
             r = ha.execute_service("homeassistant", "turn_off",
