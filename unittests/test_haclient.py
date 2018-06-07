@@ -44,6 +44,13 @@ class TestHaClient(TestCase):
         self.assertEqual(mock_resp.json(), json_data)
         self.assertEqual(ha.portnum, 8123)
 
+    def test_broke_entity(self):
+        portnum = None
+        ssl = False
+        ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
+        self.assertRaises(KeyError, ha.find_entity('b', 'cover'))
+
+
     def test_light_nossl(self):
         portnum = None
         ssl = False
