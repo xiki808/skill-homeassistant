@@ -37,10 +37,7 @@ class TestHaClient(TestCase):
         portnum = None
         ssl = True
         ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
-        print(ha.url)
         mock_resp = self._mock_response(json_data=json_data)
-        print(mock_resp.json())
-        print(mock_resp.status)
         self.assertEqual(mock_resp.json(), json_data)
         self.assertEqual(ha.portnum, 8123)
 
@@ -55,6 +52,7 @@ class TestHaClient(TestCase):
         portnum = None
         ssl = False
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
+        component = ha.find_component('light')
         entity = (ha.find_entity('kitchen', 'light'))
         if entity['best_score'] >= 50:
             print(entity['best_score'])
@@ -62,6 +60,7 @@ class TestHaClient(TestCase):
             self.assertTrue(True)
         light_attr = ha.find_entity_attr(entity['id'])
 
+        self.assertEqual(component, True)
         self.assertEqual(light_attr['name'], 'Kitchen Lights')
         self.assertEqual(entity['dev_name'], 'Kitchen Lights')
         self.assertEqual(ha.ssl, False)
