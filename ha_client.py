@@ -24,7 +24,7 @@ class HomeAssistantClient(object):
             'Content-Type': 'application/json'
         }
 
-    def find_entity(self, entity, types):
+    def _get_state(self):
         if self.ssl:
             req = get("%s/api/states" %
                       self.url, headers=self.headers,
@@ -34,10 +34,17 @@ class HomeAssistantClient(object):
                       timeout=TIMEOUT)
 
         if req.status_code == 200:
-            # require a score above 50%
-            best_score = 50
-            best_entity = None
-            for state in req.json():
+            return req.json()
+        else:
+            pass
+
+    def find_entity(self, entity, types):
+        json_data = self._get_state()
+        # require a score above 50%
+        best_score = 50
+        best_entity = None
+        if json_data:
+            for state in json_data:
                 try:
                     if state['entity_id'].split(".")[0] in types:
                         # something like temperature outside
@@ -73,16 +80,10 @@ class HomeAssistantClient(object):
     #
 
     def find_entity_attr(self, entity):
-        if self.ssl:
-            req = get("%s/api/states" %
-                      self.url, headers=self.headers, verify=self.verify,
-                      timeout=TIMEOUT)
-        else:
-            req = get("%s/api/states" % self.url, headers=self.headers,
-                      timeout=TIMEOUT)
+        json_data = self._get_state()
 
-        if req.status_code == 200:
-            for attr in req.json():
+        if json_data:
+            for attr in json_data:
                 if attr['entity_id'] == entity:
                     entity_attrs = attr['attributes']
                     try:
