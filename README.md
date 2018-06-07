@@ -57,6 +57,13 @@ Fill this out with your appropriate home assistant information and hit save.
 
 ![Screenshot](screenshot.JPG?raw=true)
 
+###  Enabling using the conversation component as Fallback
+
+Home-Assistant [supports basic speech based communication](https://www.home-assistant.io/components/conversation/).
+When enabling the setting `Enable conversation component as fallback` on home.mycroft.ai, sentences that were not parsed
+by any skill before (based on matching keywords) will be passed to this conversation component at the local Home-Assistant server.
+Like this, Mycroft will answer default and custom sentences specified in Home-Assistant.
+
 ## Usage
 
 Say something like "Hey Mycroft, turn on living room lights". Currently available commands
