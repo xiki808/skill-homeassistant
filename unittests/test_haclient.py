@@ -22,44 +22,8 @@ headers = {
     'Content-Type': 'application/json'
 }
 
+
 class TestHaClient(TestCase):
-
-    @mock.patch('requests.get')
-    def test_light_ssl(self, mock_get):
-        portnum = None
-        ssl=True
-        ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=ssl)
-        mock_resp = mock.Mock()
-        mock_resp.status_code = 200
-        mock_resp.json = mock.Mock(return_value=json_data)
-        print(mock_resp.json())
-        self.assertEqual(mock_resp.json(), json_data)
-        ha.find_entity = mock.MagicMock(name='find_entity')
-        entity = ha.find_entity(kitchen_light['dev_name'], 'light')
-        if entity['dev_name'] == 'Kitchen Lights':
-            print(entity)
-            self.assertTrue(True)
-        self.assertEqual(ha.portnum, 8123)
-        self.assertEqual(ha.url, 'https://192.168.0.1:8123')
-        self.assertEqual(ha.ssl, ssl)
-        self.assertEqual(headers, ha.headers)
-
-    @mock.patch('requests.get')
-    def test_light_nossl(self, mock_get):
-        portnum = None
-        ha = HomeAssistantClient(host='192.168.0.1', password='password', portnum=portnum, ssl=False)
-        mock_resp = mock.Mock()
-        mock_resp.status_code = 200
-        mock_resp.json = mock.Mock(return_value=json_data)
-        print(mock_resp.json())
-        self.assertEqual(mock_resp.json(), json_data)
-        ha.find_entity = mock.MagicMock(name='find_entity')
-        entity = ha.find_entity(kitchen_light['dev_name'], 'light')
-        if entity['dev_name'] == 'Kitchen Lights':
-            self.assertTrue(True)
-        self.assertEqual(ha.portnum, 8123)
-        self.assertEqual(ha.url, 'http://192.168.0.1:8123')
-        self.assertEqual(mock_resp.status_code, 200)
 
     @mock.patch('ha_client.HomeAssistantClient.find_entity')
     def test_toggle_lights(self, mock_get):
