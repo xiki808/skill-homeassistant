@@ -38,22 +38,43 @@ class TestHaClient(TestCase):
         self.assertEqual(mock_resp.json(), json_data)
         self.assertEqual(ha.portnum, 8123)
 
-    def test_connect_nossl(self):
+    def test_light_nossl(self):
         portnum = None
         ssl = False
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
         entity = (ha.find_entity('kitchen', 'light'))
         if entity['best_score'] >= 50:
+            print(entity)
             print(entity['best_score'])
             self.assertTrue(True)
         light_attr = ha.find_entity_attr(entity['id'])
-        print(light_attr['state'])
-        self.assertEqual(light_attr['state'], 'on')
         self.assertEqual(light_attr['unit_measure'], 180)
         self.assertEqual(light_attr['name'], 'Kitchen Lights')
         self.assertEqual(entity['dev_name'], 'Kitchen Lights')
+        self.assertEqual(entity,
+                         {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'on', 'best_score': 67})
         self.assertEqual(ha.ssl, False)
         self.assertEqual(ha.portnum, 8123)
+        ha_data = {'entity_id': entity['id']}
+        if light_attr['state'] == 'on':
+            r = ha.execute_service("homeassistant", "turn_off",
+                                   ha_data)
+            if r.status_code == 200:
+                entity = ha.find_entity(light_attr['name'], 'light')
+                if entity['state'] == 'off':
+                    self.assertTrue(True)
+                if entity['best_score'] >= 50:
+                    self.assertTrue(True)
+        else:
+            r = ha.execute_service("homeassistant", "turn_on",
+                                   ha_data)
+            if r.status_code == 200:
+                if entity['state'] == 'on':
+                    self.assertTrue(True)
+                    self.assertEqual(light_attr['state'], 'on')
+
+
+
 
     @mock.patch('ha_client.HomeAssistantClient.find_entity')
     def test_toggle_lights(self, mock_get):
