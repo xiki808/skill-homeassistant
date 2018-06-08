@@ -14,8 +14,7 @@ See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home
 # Updates
 Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.
 
-Testrunner tests are now setup as well to test intents.  Currently have PR https://github.com/MycroftAI/mycroft-skills/pull/363 in place to add skill as official skill for 18.02 branch.
-
+Testrunner tests are now setup as well to test intents.
 
 This is a skill to add [Home Assistant](https://home-assistant.io) support to
 [Mycroft](https://mycroft.ai). Currently is supports turning on and off several
