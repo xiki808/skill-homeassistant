@@ -356,13 +356,13 @@ class HomeAssistantSkill(FallbackSkill):
         # self.set_context('Entity', ha_entity['dev_name'])
 
         unit_measurement = self.ha.find_entity_attr(entity)
-        if unit_measurement[0] is not None:
-            sensor_unit = unit_measurement[0]
+        if unit_measurement['state'] is not None:
+            sensor_unit = unit_measurement['unit_measure']
         else:
             sensor_unit = ''
 
-        sensor_name = unit_measurement[1]
-        sensor_state = unit_measurement[2]
+        sensor_name = unit_measurement['name']
+        sensor_state = unit_measurement['state']
         # extract unit for correct pronounciation
         # this is fully optional
         try:
