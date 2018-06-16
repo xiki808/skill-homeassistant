@@ -1,9 +1,12 @@
 from unittest import TestCase
+import sys
+sys.path.append('../')
+for p in sys.path:
+    print(p)
 from ha_client import HomeAssistantClient
 import unittest
 from unittest import mock
-from urllib3 import exceptions
-from requests.exceptions import SSLError
+
 
 kitchen_light = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
 
@@ -38,11 +41,23 @@ class TestHaClient(TestCase):
             self.assertTrue(ssl, True)
             self.assertTrue(mock_request.return_value.status_code, 200)
 
+    def test_mock_ssl_no_port(self):
+        with mock.patch('requests.get') as mock_request:
+            portnum = None
+            ssl = True
+            url = 'https://192.168.0.1'
+
+            mock_request.return_value.status_code = 200
+            self.assertTrue(url, 'https://192.168.0.1')
+            self.assertEqual(portnum, None)
+            self.assertTrue(ssl, True)
+            self.assertTrue(mock_request.return_value.status_code, 200)
+
     def test_broke_entity(self):
         portnum = None
         ssl = False
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
-        self.assertRaises(KeyError, ha.find_entity('b', 'cover'))
+        self.assertRaises(TypeError, ha)
 
     def test_light_nossl(self):
         portnum = None
@@ -63,7 +78,6 @@ class TestHaClient(TestCase):
         self.assertEqual(ha.portnum, 8123)
         convo = ha.engage_conversation('turn off kitchen light')
         self.assertEqual(convo, {'extra_data': None, 'speech': 'Turned Kitchen Lights off'})
-        print(convo)
         ha_data = {'entity_id': entity['id']}
         if light_attr['state'] == 'on':
             r = ha.execute_service("homeassistant", "turn_off",
@@ -75,7 +89,7 @@ class TestHaClient(TestCase):
                     self.assertEqual(entity,
                                      {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'off',
                                       'best_score': 100})
-                    self.assertEqual(light_attr['unit_measure'], 180)
+                    self.assertEqual(light_attr['unit_measure'], 53)
                 if entity['best_score'] >= 50:
                     self.assertTrue(True)
         else:
@@ -88,7 +102,7 @@ class TestHaClient(TestCase):
                     self.assertEqual(entity,
                                      {'id': 'light.kitchen_lights', 'dev_name': 'Kitchen Lights', 'state': 'on',
                                       'best_score': 100})
-                    self.assertEqual(light_attr['unit_measure'], 180)
+                    self.assertEqual(light_attr['unit_measure'], 53)
 
 
 
