@@ -1,6 +1,8 @@
 from unittest import TestCase
 import sys
 sys.path.append('../')
+for p in sys.path:
+    print(p)
 from ha_client import HomeAssistantClient
 import unittest
 from unittest import mock
