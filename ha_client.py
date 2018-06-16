@@ -153,5 +153,4 @@ class HomeAssistantClient(object):
             return post("%s/api/conversation/process" % (self.url),
                         headers=self.headers,
                         data=json.dumps(data),
-                        timeout=TIMEOUT
-                        ).json()['speech']['plain']
+                        timeout=TIMEOUT).json()['speech']['plain']
