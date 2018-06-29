@@ -102,6 +102,7 @@ Currently the phrases are:
 * Hey Mycroft, locate/where brian (Brian is a device tracker object)
 * Hey Mycroft, what is the current living room temp
 * Hey Mycroft, what is the current season
+* Hey Mycroft, tell me the current (status|state|value|sensor) of the living room thermostat temperature
 
 
 
