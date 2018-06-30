@@ -7,4 +7,4 @@ omit =
     # omit the test folder
     test/*
     unittests/test_ha_client.py
-    mycroft-core/*
+    *mycroft-core/*
