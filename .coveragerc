@@ -1,0 +1,9 @@
+[run]
+include =
+    __init__.py
+    unittests/
+
+omit =
+    # omit the test folder
+    test/*
+    unittests/test_ha_client.py
