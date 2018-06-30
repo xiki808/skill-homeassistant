@@ -8,3 +8,4 @@ omit =
     test/*
     unittests/test_ha_client.py
     *mycroft-core/*
+    *.venv*
