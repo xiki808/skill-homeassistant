@@ -1,7 +1,7 @@
 [run]
 include =
     __init__.py
-    unittests/
+    unittests/*
     test/*
 
 omit =
