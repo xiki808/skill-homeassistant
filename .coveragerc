@@ -3,6 +3,7 @@ include =
     __init__.py
     unittests/*
     test/*
+    ha_client.py
 
 omit =
     # omit the test folder
