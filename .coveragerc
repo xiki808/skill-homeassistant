@@ -16,4 +16,3 @@ omit =
     */python?.?/*
     *mycroft-core/*
     */site-packages/*
-    */workspace/test_ha_client.py*
