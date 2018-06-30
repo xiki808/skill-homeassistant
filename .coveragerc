@@ -2,10 +2,10 @@
 include =
     __init__.py
     unittests/
+    test/*
 
 omit =
     # omit the test folder
-    test/*
     unittests/test_ha_client.py
     *mycroft-core/*
     *.venv*
