@@ -54,13 +54,13 @@ class TestHaClient(TestCase):
             self.assertTrue(mock_request.return_value.status_code, 200)
 
     def test_broke_entity(self):
-        portnum = None
+        portnum = 8123
         ssl = False
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
         self.assertRaises(TypeError, ha)
 
     def test_light_nossl(self):
-        portnum = None
+        portnum = 8123
         ssl = False
         ha = HomeAssistantClient(host='167.99.144.205', password='password', portnum=portnum, ssl=ssl)
         component = ha.find_component('light')
@@ -75,7 +75,7 @@ class TestHaClient(TestCase):
         self.assertEqual(light_attr['name'], 'Kitchen Lights')
         self.assertEqual(entity['dev_name'], 'Kitchen Lights')
         self.assertEqual(ha.ssl, False)
-        self.assertEqual(ha.portnum, 8123)
+        self.assertEqual(portnum, 8123)
         convo = ha.engage_conversation('turn off kitchen light')
         self.assertEqual(convo, {'extra_data': None, 'speech': 'Turned Kitchen Lights off'})
         ha_data = {'entity_id': entity['id']}
