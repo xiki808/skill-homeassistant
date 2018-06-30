@@ -9,6 +9,7 @@ omit =
     unittests/test_ha_client.py
     *mycroft-core/*
     *.venv*
+    */workspace/test_ha_client.py*
 
 [report]
 omit =
