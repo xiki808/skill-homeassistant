@@ -1,0 +1,4 @@
+{
+  "utterance": "where is the location of paulus",
+  "expected_dialog": "homeassistant.tracker.found"
+}

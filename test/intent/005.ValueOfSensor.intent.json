@@ -1,0 +1,4 @@
+{
+  "utterance": "give me the value of outside temperature",
+  "expected_dialog": "homeassistant.sensor"
+}
