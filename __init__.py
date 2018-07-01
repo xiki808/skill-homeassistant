@@ -124,7 +124,7 @@ class HomeAssistantSkill(FallbackSkill):
         try:
             ha_entity = self.ha.find_entity(
                 entity, ['group', 'light', 'fan', 'switch', 'scene',
-                         'input_boolean'])
+                         'input_boolean', 'climate'])
         except ConnectionError:
             self.speak_dialog('homeassistant.error.offline')
             return

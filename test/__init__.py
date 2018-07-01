@@ -33,6 +33,10 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha.find_entity.return_value = kitchen_light_on
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
+    if example.endswith('006.SetLightBright.intent.json'):
+        s[0].ha.find_entity.return_value = kitchen_light_on
+        s[0].ha.find_entity_attr.return_value = kitchen_light_attr
+
     if example.endswith('005.CurrentSensorValue.intent.json'):
         s[0].ha.find_entity.return_value = temp_entity
         s[0].ha.find_entity_attr.return_value = temp_entity_attr
