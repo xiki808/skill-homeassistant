@@ -251,6 +251,7 @@ class HomeAssistantSkill(FallbackSkill):
             else:
                 light_attrs = self.ha.find_entity_attr(ha_entity['id'])
                 if light_attrs['unit_measure'] is None:
+                    print(ha_entity)
                     self.speak_dialog(
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
