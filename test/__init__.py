@@ -4,7 +4,6 @@ import mock
 
 kitchen_light = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
 
-
 def test_runner(skill, example, emitter, loader):
     def execute_service(service, action, data):
         if action == 'turn_on':
