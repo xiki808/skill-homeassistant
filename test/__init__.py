@@ -4,6 +4,8 @@ import mock
 
 kitchen_light_off = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
 kitchen_light_on = {'state': 'on', 'id': '1', 'dev_name': 'kitchen'}
+thermostat_on = {'state': 'on', 'id': '3', 'dev_name': 'living room thermostat'}
+thermostat_off = {'state': 'off', 'id': '3', 'dev_name': 'living room thermostat'}
 kitchen_light_attr = {
             "id": '1',
             "dev_name": {'attributes':
@@ -20,25 +22,33 @@ temp_entity_attr =  {
 def test_runner(skill, example, emitter, loader):
     s = [s for s in loader.skills if s and s.root_dir == skill]
 
-    s[0].ha = mock.MagicMock()
     if example.endswith('001.TurnOnLight.intent.json'):
+        s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = kitchen_light_off
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
     if example.endswith('003.TurnOffLight.intent.json'):
+        s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = kitchen_light_on
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
     if example.endswith('002.DimLight.intent.json'):
+        s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = kitchen_light_on
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
     if example.endswith('006.SetLightBright.intent.json'):
+        s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = kitchen_light_on
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
     if example.endswith('005.CurrentSensorValue.intent.json'):
+        s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = temp_entity
         s[0].ha.find_entity_attr.return_value = temp_entity_attr
+
+    if example.endswith('007.TurnOffThermostat.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha.find_entity.return_value = thermostat_on
 
     return SkillTest(skill, example, emitter).run(loader)
