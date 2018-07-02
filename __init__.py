@@ -113,7 +113,7 @@ class HomeAssistantSkill(FallbackSkill):
     def __build_set_thermostat_intent(self):
         intent = IntentBuilder("SetThermostatIntent") \
             .require("SetVerb").require("entity") \
-            .require("ClimateKeyword").require("temperature").build()
+            .require("ClimateKeyword").require("temp").build()
         self.register_intent(intent, self.handle_set_thermostat_intent)
 
     def handle_switch_intent(self, message):
@@ -438,7 +438,7 @@ class HomeAssistantSkill(FallbackSkill):
         entity = message.data["entity"]
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("This is the message data: %s" % message.data)
-        temperature = message.data['temperature']
+        temperature = message.data["temp"]
         LOGGER.debug("Temperature: %s" % temperature)
         try:
             ha_entity = self.ha.find_entity(entity, ['climate'])
