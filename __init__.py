@@ -459,6 +459,7 @@ class HomeAssistantSkill(FallbackSkill):
                               "value": temperature,
                               "unit": climate_attr['unit_measure']})
         else:
+            LOGGER.debug("The request data is: {}".format(r.text))
             self.speak("Had a issue setting thermostat temperature.")
 
     def handle_fallback(self, message):
