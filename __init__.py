@@ -436,8 +436,9 @@ class HomeAssistantSkill(FallbackSkill):
             self.speak_dialog('homeassistant.error.setup')
             return
         entity = message.data["entity"]
-        temperature = message.data["temperature"]
         LOGGER.debug("Entity: %s" % entity)
+        LOGGER.debug("This is the message data: %s" % message.data)
+        temperature = message.data["temperature"]
         LOGGER.debug("Temperature: %s" % temperature)
         try:
             ha_entity = self.ha.find_entity(entity, ['climate'])
