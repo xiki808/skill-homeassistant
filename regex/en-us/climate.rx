@@ -1,1 +1,1 @@
-set (?P<Entity>.*) thermostat to (?P<TemperatureValue>.*)
+set (?P<entity>.*) thermostat (?P<temperature>.*)

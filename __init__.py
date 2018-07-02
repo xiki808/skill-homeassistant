@@ -112,8 +112,8 @@ class HomeAssistantSkill(FallbackSkill):
 
     def __build_set_thermostat_intent(self):
         intent = IntentBuilder("SetThermostatIntent") \
-            .require("SetVerb").require("Entity") \
-            .require("ClimateKeyword").require("TemperatureValue").build()
+            .require("SetVerb").require("entity") \
+            .require("ClimateKeyword").require("temperature").build()
         self.register_intent(intent, self.handle_set_thermostat_intent)
 
     def handle_switch_intent(self, message):
@@ -435,8 +435,8 @@ class HomeAssistantSkill(FallbackSkill):
         if self.ha is None:
             self.speak_dialog('homeassistant.error.setup')
             return
-        entity = message.data["Entity"]
-        temperature = message.data["TemperatureValue"]
+        entity = message.data["entity"]
+        temperature = message.data["temperature"]
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("Temperature: %s" % temperature)
         try:
