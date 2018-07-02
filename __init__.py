@@ -60,6 +60,7 @@ class HomeAssistantSkill(FallbackSkill):
         self.__build_automation_intent()
         self.__build_sensor_intent()
         self.__build_tracker_intent()
+        self.__build_set_thermostat_intent()
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
@@ -111,8 +112,8 @@ class HomeAssistantSkill(FallbackSkill):
 
     def __build_set_thermostat_intent(self):
         intent = IntentBuilder("SetThermostatIntent") \
-            .require("ClimateKeyword").require("SetVerb") \
-            .require("Entity").require("Temperature").build()
+            .require("SetVerb").require("Entity") \
+            .require("ClimateKeyword").require("TemperatureValue").build()
         self.register_intent(intent, self.handle_set_thermostat_intent)
 
     def handle_switch_intent(self, message):
@@ -435,10 +436,11 @@ class HomeAssistantSkill(FallbackSkill):
             self.speak_dialog('homeassistant.error.setup')
             return
         entity = message.data["Entity"]
-        temperature = message.data["Temperature"]
+        temperature = message.data["TemperatureValue"]
         LOGGER.debug("Entity: %s" % entity)
+        LOGGER.debug("Temperature: %s" % temperature)
         try:
-            ha_entity = self.ha.find_entity(entity, ['device_tracker'])
+            ha_entity = self.ha.find_entity(entity, ['climate'])
         except ConnectionError:
             self.speak_dialog('homeassistant.error.offline')
             return
