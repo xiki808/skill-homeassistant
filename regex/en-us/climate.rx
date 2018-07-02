@@ -1,1 +1,1 @@
-(set) (?P<Entity>.*) thermostat (to) (?P<temperature>\d*)
+(set) (?P<Entity>.*) thermostat to (?P<temperature>\d*)
