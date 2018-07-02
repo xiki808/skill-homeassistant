@@ -15,7 +15,7 @@ kitchen_light_attr = {
 temp_entity = {'state': '', 'id': '2', 'dev_name': 'hallway'}
 temp_entity_attr =  {
                         "unit_measure": '°F',
-                        "name": 'hallway_thermostat',
+                        "name": 'hallway',
                         "state": '75'
                     }
 
