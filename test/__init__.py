@@ -53,6 +53,6 @@ def test_runner(skill, example, emitter, loader):
 
     if example.endswith('008.SetThermostatTemp.intent.json'):
         s[0].ha = mock.MagicMock()
-        s[0].ha.find_entity.return_value = thermostat_on
+        s[0].ha.find_entity.return_value = temp_entity
 
     return SkillTest(skill, example, emitter).run(loader)
