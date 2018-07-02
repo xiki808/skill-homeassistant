@@ -109,6 +109,12 @@ class HomeAssistantSkill(FallbackSkill):
         # TODO - Identity location, proximity
         self.register_intent(intent, self.handle_tracker_intent)
 
+    def __build_set_thermostat_intent(self):
+        intent = IntentBuilder("SetThermostatIntent") \
+            .require("ClimateKeyword").require("SetVerb") \
+            .require("Entity").require("Temperature").build()
+        self.register_intent(intent, self.handle_set_thermostat_intent)
+
     def handle_switch_intent(self, message):
         self._setup()
         if self.ha is None:
@@ -422,6 +428,35 @@ class HomeAssistantSkill(FallbackSkill):
         self.speak_dialog('homeassistant.tracker.found',
                           data={'dev_name': dev_name,
                                 'location': dev_location})
+
+    def handle_set_thermostat_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
+        entity = message.data["Entity"]
+        temperature = message.data["Temperature"]
+        LOGGER.debug("Entity: %s" % entity)
+        try:
+            ha_entity = self.ha.find_entity(entity, ['device_tracker'])
+        except ConnectionError:
+            self.speak_dialog('homeassistant.error.offline')
+            return
+        if ha_entity is None:
+            self.speak_dialog('homeassistant.device.unknown', data={
+                              "dev_name": entity})
+            return
+
+        climate_data = {'entity_id': ha_entity['id'], 'temperature': temperature}
+        climate_attr = self.ha.find_entity_attr(ha_entity['id'])
+        r = self.ha.execute_service("climate", "set_temperature", data=climate_data)
+        if r == 200:
+            self.speak_dialog('homeassistant.set.thermostat', data={
+                              "dev_name": climate_attr['name'],
+                              "value": temperature,
+                              "unit": climate_attr['unit_measure']})
+        else:
+            self.speak("Had a issue setting thermostat temperature.")
 
     def handle_fallback(self, message):
         if not self.enable_fallback:
