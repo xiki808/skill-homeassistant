@@ -438,7 +438,7 @@ class HomeAssistantSkill(FallbackSkill):
         entity = message.data["entity"]
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("This is the message data: %s" % message.data)
-        temperature = message.data["temperature"]
+        temperature = message.data['temperature']
         LOGGER.debug("Temperature: %s" % temperature)
         try:
             ha_entity = self.ha.find_entity(entity, ['climate'])
