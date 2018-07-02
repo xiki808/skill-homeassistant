@@ -54,5 +54,6 @@ def test_runner(skill, example, emitter, loader):
     if example.endswith('008.SetThermostatTemp.intent.json'):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = temp_entity
+        s[0].ha.find_entity_attr.return_value = temp_entity_attr
 
     return SkillTest(skill, example, emitter).run(loader)
