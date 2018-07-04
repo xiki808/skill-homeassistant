@@ -32,9 +32,6 @@ class HomeAssistantSkill(FallbackSkill):
             except ValueError:
                 # String might be some rubbish (like '')
                 portnumber = 0
-            except ConnectionError:
-                self.speak_dialog('homeassistant.error.offline')
-                return
             self.ha = HomeAssistantClient(
                 self.settings.get('host'),
                 self.settings.get('password'),
