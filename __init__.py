@@ -1,7 +1,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
-
+from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
 from requests.exceptions import ConnectionError
 
@@ -17,6 +17,7 @@ TIMEOUT = 10
 class HomeAssistantSkill(FallbackSkill):
 
     def __init__(self):
+        MycroftSkill.__init__(self)
         super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
         self.ha = None
         self.enable_fallback = False
@@ -55,11 +56,12 @@ class HomeAssistantSkill(FallbackSkill):
         self.load_vocab_files(join(dirname(__file__), 'vocab', self.lang))
         self.load_regex_files(join(dirname(__file__), 'regex', self.lang))
         self.__build_switch_intent()
-        self.__build_light_set_intent()
         self.__build_light_adjust_intent()
         self.__build_automation_intent()
         self.__build_sensor_intent()
         self.__build_tracker_intent()
+        self.register_intent_file('set.climate.intent', self.handle_set_thermostat_intent)
+        self.register_intent_file('set.light.brightness.intent', self.handle_light_set_intent)
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
@@ -78,11 +80,6 @@ class HomeAssistantSkill(FallbackSkill):
             .require("Action").require("Entity").build()
         self.register_intent(intent, self.handle_switch_intent)
 
-    def __build_light_set_intent(self):
-        intent = IntentBuilder("LightSetBrightnessIntent") \
-            .optionally("LightsKeyword").require("SetVerb") \
-            .require("Entity").require("BrightnessValue").build()
-        self.register_intent(intent, self.handle_light_set_intent)
 
     def __build_light_adjust_intent(self):
         intent = IntentBuilder("LightAdjBrightnessIntent") \
@@ -109,6 +106,7 @@ class HomeAssistantSkill(FallbackSkill):
         # TODO - Identity location, proximity
         self.register_intent(intent, self.handle_tracker_intent)
 
+
     def handle_switch_intent(self, message):
         self._setup()
         if self.ha is None:
@@ -124,7 +122,7 @@ class HomeAssistantSkill(FallbackSkill):
         try:
             ha_entity = self.ha.find_entity(
                 entity, ['group', 'light', 'fan', 'switch', 'scene',
-                         'input_boolean'])
+                         'input_boolean', 'climate'])
         except ConnectionError:
             self.speak_dialog('homeassistant.error.offline')
             return
@@ -165,14 +163,15 @@ class HomeAssistantSkill(FallbackSkill):
             self.speak_dialog('homeassistant.error.sorry')
             return
 
+    @intent_file_handler('set.light.brightness.intent')
     def handle_light_set_intent(self, message):
         self._setup()
         if(self.ha is None):
             self.speak_dialog('homeassistant.error.setup')
             return
-        entity = message.data["Entity"]
+        entity = message.data["entity"]
         try:
-            brightness_req = float(message.data["BrightnessValue"])
+            brightness_req = float(message.data["brightnessvalue"])
             if brightness_req > 100 or brightness_req < 0:
                 self.speak_dialog('homeassistant.brightness.badreq')
         except KeyError:
@@ -197,16 +196,13 @@ class HomeAssistantSkill(FallbackSkill):
         # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
 
-        # TODO - Allow value set
-        if "SetVerb" in message.data:
-            ha_data['brightness'] = brightness_value
-            ha_data['dev_name'] = ha_entity['dev_name']
-            self.ha.execute_service("homeassistant", "turn_on", ha_data)
-            self.speak_dialog('homeassistant.brightness.dimmed',
-                              data=ha_data)
-        else:
-            self.speak_dialog('homeassistant.error.sorry')
-            return
+        ha_data['brightness'] = brightness_value
+        ha_data['dev_name'] = ha_entity['dev_name']
+        self.ha.execute_service("homeassistant", "turn_on", ha_data)
+        self.speak_dialog('homeassistant.brightness.dimmed',
+                          data=ha_data)
+
+        return
 
     def handle_light_adjust_intent(self, message):
         self._setup()
@@ -422,6 +418,36 @@ class HomeAssistantSkill(FallbackSkill):
         self.speak_dialog('homeassistant.tracker.found',
                           data={'dev_name': dev_name,
                                 'location': dev_location})
+
+    @intent_file_handler('set.climate.intent')
+    def handle_set_thermostat_intent(self, message):
+        self._setup()
+        if self.ha is None:
+            self.speak_dialog('homeassistant.error.setup')
+            return
+        entity = message.data["entity"]
+        LOGGER.debug("Entity: %s" % entity)
+        LOGGER.debug("This is the message data: %s" % message.data)
+        temperature = message.data["temp"]
+        LOGGER.debug("Temperature: %s" % temperature)
+        try:
+            ha_entity = self.ha.find_entity(entity, ['climate'])
+        except ConnectionError:
+            self.speak_dialog('homeassistant.error.offline')
+            return
+        if ha_entity is None:
+            self.speak_dialog('homeassistant.device.unknown', data={
+                              "dev_name": entity})
+            return
+
+        climate_data = {'entity_id': ha_entity['id'], 'temperature': temperature}
+        climate_attr = self.ha.find_entity_attr(ha_entity['id'])
+        r = self.ha.execute_service("climate", "set_temperature", data=climate_data)
+        self.speak_dialog('homeassistant.set.thermostat', data={
+                          "dev_name": climate_attr['name'],
+                          "value": temperature,
+                          "unit": climate_attr['unit_measure']})
+
 
     def handle_fallback(self, message):
         if not self.enable_fallback:
