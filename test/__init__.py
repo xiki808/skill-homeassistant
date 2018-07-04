@@ -56,12 +56,12 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha.find_entity.return_value = temp_entity
         s[0].ha.find_entity_attr.return_value = temp_entity_attr
 
-    if example.endswith('009.SetThermostatBrokenHa.intent.json'):
+    if example.endswith('009.SetThermostatUnknownEntity.intent.json'):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
         s[0].ha.find_entity_attr.return_value = None
 
-    if example.endswith('010.SensorBroke.intent.json'):
+    if example.endswith('010.SensorUnknownEntity.intent.json'):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
         s[0].ha.find_entity_attr.return_value = None

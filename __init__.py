@@ -3,7 +3,7 @@ from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, RequestException
 
 from .ha_client import HomeAssistantClient
 
@@ -339,7 +339,7 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Entity: %s" % entity)
         try:
             ha_entity = self.ha.find_entity(entity, ['sensor'])
-        except ConnectionError:
+        except RequestException:
             self.speak_dialog('homeassistant.error.offline')
             return
         if ha_entity is None:
@@ -401,7 +401,7 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Entity: %s" % entity)
         try:
             ha_entity = self.ha.find_entity(entity, ['device_tracker'])
-        except ConnectionError:
+        except (RequestException, ConnectionError):
             self.speak_dialog('homeassistant.error.offline')
             return
         if ha_entity is None:
@@ -432,7 +432,7 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Temperature: %s" % temperature)
         try:
             ha_entity = self.ha.find_entity(entity, ['climate'])
-        except ConnectionError:
+        except (RequestException, ConnectionError):
             self.speak_dialog('homeassistant.error.offline')
             return
         if ha_entity is None:
