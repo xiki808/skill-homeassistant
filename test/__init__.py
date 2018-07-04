@@ -2,8 +2,8 @@ from test.integrationtests.skills.skill_tester import SkillTest
 
 import mock
 
-kitchen_light_off = {'state': 'off', 'id': '1', 'dev_name': 'kitchen'}
-kitchen_light_on = {'state': 'on', 'id': '1', 'dev_name': 'kitchen'}
+kitchen_light_off = {'state': 'off', 'id': '1', 'dev_name': 'kitchen light'}
+kitchen_light_on = {'state': 'on', 'id': '1', 'dev_name': 'kitchen light'}
 thermostat_on = {'state': 'on', 'id': '3', 'dev_name': 'living room thermostat'}
 thermostat_off = {'state': 'off', 'id': '3', 'dev_name': 'living room thermostat'}
 kitchen_light_attr = {
@@ -12,10 +12,10 @@ kitchen_light_attr = {
                              {'friendly_name': 'Kitchen Lights', 'max_mireds': 500, 'min_mireds': 153, 'supported_features': 151},
                          'entity_id': 'light.kitchen_lights', 'state': 'off'}, 'unit_measure': 10}
 
-temp_entity = {'state': '', 'id': '2', 'dev_name': 'hallway'}
+temp_entity = {'state': '', 'id': '2', 'dev_name': 'hallway thermostat'}
 temp_entity_attr =  {
                         "unit_measure": '°F',
-                        "name": 'hallway',
+                        "name": 'hallway thermostat',
                         "state": '75'
                     }
 
