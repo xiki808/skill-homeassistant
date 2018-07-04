@@ -59,6 +59,11 @@ def test_runner(skill, example, emitter, loader):
     if example.endswith('009.SetThermostatBrokenHa.intent.json'):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
-        s[0].ha.find_entity_attr.return_value = temp_entity_attr
+        s[0].ha.find_entity_attr.return_value = None
+
+    if example.endswith('010.SensorBroke.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha.find_entity.return_value = None
+        s[0].ha.find_entity_attr.return_value = None
 
     return SkillTest(skill, example, emitter).run(loader)
