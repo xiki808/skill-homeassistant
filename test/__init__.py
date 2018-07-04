@@ -56,4 +56,7 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha.find_entity.return_value = temp_entity
         s[0].ha.find_entity_attr.return_value = temp_entity_attr
 
+    if example.endswith('009.SetThermostatBrokenHa.intent.json'):
+        s[0].ha = None
+
     return SkillTest(skill, example, emitter).run(loader)
