@@ -15,6 +15,7 @@ See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home
 
 # Updates
 Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.
+
 Now supports Climate control to change the temperature via `set hallway thermostat to 75 degrees` hallway thermostat is our entity in this phrase.
 
 Testrunner tests are now setup as well to test intents.
