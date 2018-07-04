@@ -443,14 +443,11 @@ class HomeAssistantSkill(FallbackSkill):
         climate_data = {'entity_id': ha_entity['id'], 'temperature': temperature}
         climate_attr = self.ha.find_entity_attr(ha_entity['id'])
         r = self.ha.execute_service("climate", "set_temperature", data=climate_data)
-        if r == 200:
-            self.speak_dialog('homeassistant.set.thermostat', data={
-                              "dev_name": climate_attr['name'],
-                              "value": temperature,
-                              "unit": climate_attr['unit_measure']})
-        else:
-            LOGGER.debug("The request data is: {}".format(r.text))
-            self.speak("Had a issue setting thermostat temperature.")
+        self.speak_dialog('homeassistant.set.thermostat', data={
+                          "dev_name": climate_attr['name'],
+                          "value": temperature,
+                          "unit": climate_attr['unit_measure']})
+
 
     def handle_fallback(self, message):
         if not self.enable_fallback:
