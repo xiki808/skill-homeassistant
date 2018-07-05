@@ -22,7 +22,7 @@ Testrunner tests are now setup as well to test intents.
 
 This is a skill to add [Home Assistant](https://home-assistant.io) support to
 [Mycroft](https://mycroft.ai). Currently is supports turning on and off several
-entity types (`light`, `switch`, `scene`, `groups` and `input_boolean`).
+entity types (`light`, `switch`, `scene`, `climate`, `groups` and `input_boolean`).
 
 ## Support/Help
 You can always find me in the mycroft mattermost channel here, https://chat.mycroft.ai
