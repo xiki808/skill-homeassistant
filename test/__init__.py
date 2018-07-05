@@ -88,5 +88,11 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
 
+    if example.endswith('017.CannotDimLight.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha.find_entity.return_value = kitchen_light_off
+        s[0].ha.find_entity_attr.return_value = kitchen_light_attr
+
+
 
     return SkillTest(skill, example, emitter).run(loader)
