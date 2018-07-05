@@ -22,7 +22,7 @@ temp_entity_attr =  {
 def test_runner(skill, example, emitter, loader):
     s = [s for s in loader.skills if s and s.root_dir == skill]
 
-    if example.endswith('001.TurnOnLight.intent.json'):
+    if example.endswith('001.TurnOnLight.intent.json') or example.endswith('011.ToggleLight.intent.json'):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = kitchen_light_off
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
@@ -65,5 +65,14 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
         s[0].ha.find_entity_attr.return_value = None
+
+    if example.endswith('011.SwitchUnknownEntity.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha.find_entity.return_value = None
+        s[0].ha.find_entity_attr.return_value = None
+
+    if example.endswith('012.Connection.Error.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha = None
 
     return SkillTest(skill, example, emitter).run(loader)

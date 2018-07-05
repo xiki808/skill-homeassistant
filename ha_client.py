@@ -1,6 +1,7 @@
 from requests import get, post
 from fuzzywuzzy import fuzz
 import json
+from requests.exceptions import ConnectionError, RequestException, Timeout
 
 __author__ = 'btotharye'
 
@@ -25,17 +26,22 @@ class HomeAssistantClient(object):
 
     def _get_state(self):
         if self.ssl:
-            req = get("%s/api/states" %
-                      self.url, headers=self.headers,
-                      verify=self.verify, timeout=TIMEOUT)
+            try:
+                req = get("%s/api/states" %
+                          self.url, headers=self.headers,
+                          verify=self.verify, timeout=TIMEOUT)
+            except (Timeout, ConnectionError, KeyError, RequestException) as e:
+                raise ConnectionRefusedError(status="The home assistant server did not respond.")
         else:
-            req = get("%s/api/states" % self.url, headers=self.headers,
-                      timeout=TIMEOUT)
-
+            try:
+                req = get("%s/api/states" % self.url, headers=self.headers,
+                          timeout=TIMEOUT)
+            except (Timeout, ConnectionError, KeyError, RequestException) as e:
+                raise ConnectionRefusedError(status="The home assistant server did not respond.")
         if req.status_code == 200:
             return req.json()
         else:
-            pass
+            raise ConnectionRefusedError(status="The home assistant server did not respond.")
 
     def find_entity(self, entity, types):
         json_data = self._get_state()
