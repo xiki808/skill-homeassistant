@@ -84,4 +84,9 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
 
+    if example.endswith('016.SetLightBrightUnknown.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha.find_entity.return_value = None
+
+
     return SkillTest(skill, example, emitter).run(loader)
