@@ -80,7 +80,7 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha.find_entity.return_value = kitchen_light_on
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
-    if example.endswith('013.LightUnknownEntity.intent.json'):
+    if example.endswith('013.LightUnknownEntity.intent.json') or example.endswith('015.DeviceTrackerUnknown.intent.json'):
         s[0].ha = mock.MagicMock()
         s[0].ha.find_entity.return_value = None
 
