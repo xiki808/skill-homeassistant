@@ -13,8 +13,14 @@ kitchen_light_attr = {
                          'entity_id': 'light.kitchen_lights', 'state': 'off'}, 'unit_measure': 10}
 
 temp_entity = {'state': '', 'id': '2', 'dev_name': 'hallway thermostat'}
-temp_entity_attr =  {
+temp_entity_attr = {
                         "unit_measure": '°F',
+                        "name": 'hallway thermostat',
+                        "state": '75'
+                    }
+
+temp_entity_attr_broke = {
+                        "unit_measure": None,
                         "name": 'hallway thermostat',
                         "state": '75'
                     }
@@ -98,5 +104,9 @@ def test_runner(skill, example, emitter, loader):
         s[0].ha.find_entity.return_value = kitchen_light_on
         s[0].ha.find_entity_attr.return_value = kitchen_light_attr
 
+    if example.endswith('020.DimNotSupported.intent.json'):
+        s[0].ha = mock.MagicMock()
+        s[0].ha.find_entity.return_value = kitchen_light_on
+        s[0].ha.find_entity_attr.return_value = temp_entity_attr_broke
 
     return SkillTest(skill, example, emitter).run(loader)
