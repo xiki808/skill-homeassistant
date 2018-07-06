@@ -106,6 +106,8 @@ Currently the phrases are:
 * Hey Mycroft, what is the current season
 * Hey Mycroft, tell me the current (status|state|value|sensor) of the living room thermostat temperature
 * Hey Mycroft, set the hallway thermostat to 75 degrees
+* Hey Mycroft, set the hallway thermostat temperature to 75 degrees
+* Hey Mycroft, change the hallway thermostat temperature to 75 degrees
 
 
 ## TODO
