@@ -13,23 +13,24 @@ class HomeAssistantClient(object):
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
         self.verify = verify
-        if portnum is None or portnum == 0:
-            self.url = "https://%s" % host
         if self.ssl:
-            self.url = "https://%s:%d" % (host, portnum)
+            self.url = "https://{}".format(host)
         else:
-            self.url = "http://%s:%d" % (host, portnum)
+            self.url = "http:/{}".format(host)
+        if portnum:
+            self.url = "{}:{}".format(self.url, portnum)
         self.headers = {
             'x-ha-access': password,
             'Content-Type': 'application/json'
         }
 
-    ## Get state object
-    # Throws request Errors (Subclasses of ConnectionError, raises HTTPErrors)
     def _get_state(self):
-        # Don't catch errors, as they provide important information about
-        # misconfiguration to the user. All requests exceptions inherit from ConnectionError
-        # Other errors should not occur in any case
+        """Get state object
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         if self.ssl:
             req = get("{}/api/states".format(self.url), headers=self.headers,
                       verify=self.verify, timeout=TIMEOUT)
@@ -39,9 +40,13 @@ class HomeAssistantClient(object):
         req.raise_for_status()
         return req.json()
 
-    ## Find entity with specified name
-    # Throws request Errors (Subclasses of ConnectionError, raises HTTPErrors)
     def find_entity(self, entity, types):
+        """Find entity with specified name, fuzzy matching
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         json_data = self._get_state()
         # require a score above 50%
         best_score = 50
@@ -79,10 +84,13 @@ class HomeAssistantClient(object):
                     pass
             return best_entity
 
-    #
-    # checking the entity attributes to be used in the response dialog.
-    #
     def find_entity_attr(self, entity):
+        """checking the entity attributes to be used in the response dialog.
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         json_data = self._get_state()
 
         if json_data:
@@ -111,21 +119,33 @@ class HomeAssistantClient(object):
         return None
 
     def execute_service(self, domain, service, data):
+        """Execute service at HAServer
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         if self.ssl:
-            r = post("%s/api/services/%s/%s" % (self.url, domain, service),
+            r = post("{}/api/services/{}/{}".format(self.url, domain, service),
                      headers=self.headers, data=json.dumps(data),
                      verify=self.verify, timeout=TIMEOUT)
         else:
-            r = post("%s/api/services/%s/%s" % (self.url, domain, service),
-                     headers=self.headers, data=json.dumps(data), timeout=TIMEOUT)
+            r = post("{}/api/services/{}/{}".format(self.url, domain, service),
+                     headers=self.headers, data=json.dumps(data),
+                     timeout=TIMEOUT)
         r.raise_for_status()
         return r
 
     def find_component(self, component):
-        """Check if a component is loaded at the HA-Server"""
+        """Check if a component is loaded at the HA-Server
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         if self.ssl:
-            req = get("%s/api/components" %
-                      self.url, headers=self.headers, verify=self.verify,
+            req = get("{}/api/components".format(self.url),
+                      headers=self.headers, verify=self.verify,
                       timeout=TIMEOUT)
         else:
             req = get("%s/api/components" % self.url, headers=self.headers,
@@ -136,6 +156,10 @@ class HomeAssistantClient(object):
 
     def engage_conversation(self, utterance):
         """Engage the conversation component at the Home Assistant server
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
         Attributes:
             utterance    raw text message to be processed
         Return:
@@ -147,16 +171,17 @@ class HomeAssistantClient(object):
             "text": utterance
         }
         if self.ssl:
-            r = post("%s/api/conversation/process" % (self.url),
-                        headers=self.headers,
-                        data=json.dumps(data),
-                        verify=self.verify,
-                        timeout=TIMEOUT
-                        )
+            r = post("{}/api/conversation/process".format(self.url),
+                     headers=self.headers,
+                     data=json.dumps(data),
+                     verify=self.verify,
+                     timeout=TIMEOUT
+                     )
         else:
-            r = post("%s/api/conversation/process" % (self.url),
-                        headers=self.headers,
-                        data=json.dumps(data),
-                        timeout=TIMEOUT)
+            r = post("{}/api/conversation/process".format(self.url),
+                     headers=self.headers,
+                     data=json.dumps(data),
+                     timeout=TIMEOUT
+                     )
         r.raise_for_status()
         return r.json()['speech']['plain']

@@ -450,7 +450,7 @@ class HomeAssistantSkill(FallbackSkill):
         }
         climate_attr = self.ha.find_entity_attr(ha_entity['id'])
         self.ha.execute_service("climate", "set_temperature",
-                                    data=climate_data)
+                                data=climate_data)
         self.speak_dialog('homeassistant.set.thermostat',
                           data={
                               "dev_name": climate_attr['name'],
