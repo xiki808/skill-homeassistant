@@ -5,7 +5,6 @@ from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
 
 from requests.exceptions import (
-    ConnectionError,
     RequestException,
     Timeout,
     InvalidURL,
@@ -15,7 +14,6 @@ from requests.exceptions import (
 from requests.packages.urllib3.exceptions import MaxRetryError
 
 from .ha_client import HomeAssistantClient
-import json
 
 
 __author__ = 'robconnolly, btotharye, nielstron'
@@ -126,12 +124,10 @@ class HomeAssistantSkill(FallbackSkill):
         # TODO - Identity location, proximity
         self.register_intent(intent, self.handle_tracker_intent)
 
-    """
-    Try to find an entity on the HAServer
-    Creates dialogs for errors and speaks them
-    Returns None if nothing was found
-    Else returns entity that was found
-    """
+    # Try to find an entity on the HAServer
+    # Creates dialogs for errors and speaks them
+    # Returns None if nothing was found
+    # Else returns entity that was found
     def _find_entity(self, entity, domains):
         self._setup()
         if self.ha is None:
@@ -453,7 +449,7 @@ class HomeAssistantSkill(FallbackSkill):
             'temperature': temperature
         }
         climate_attr = self.ha.find_entity_attr(ha_entity['id'])
-        r = self.ha.execute_service("climate", "set_temperature",
+        self.ha.execute_service("climate", "set_temperature",
                                     data=climate_data)
         self.speak_dialog('homeassistant.set.thermostat',
                           data={
