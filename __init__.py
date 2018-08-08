@@ -3,7 +3,7 @@ from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
-from requests.exceptions import ConnectionError, RequestException
+from requests.exceptions import ConnectionError, Timeout
 
 from .ha_client import HomeAssistantClient
 
@@ -118,8 +118,12 @@ class HomeAssistantSkill(FallbackSkill):
             ha_entity = self.ha.find_entity(
                 entity, ['group', 'light', 'fan', 'switch', 'scene',
                          'input_boolean', 'climate'])
-        except ConnectionError:
+        except Timeout as e:
             self.speak_dialog('homeassistant.error.offline')
+            return
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error', data={
+                    "exception": str(e)})
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
@@ -179,8 +183,9 @@ class HomeAssistantSkill(FallbackSkill):
         try:
             ha_entity = self.ha.find_entity(
                 entity, ['group', 'light'])
-        except ConnectionError:
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
@@ -218,8 +223,9 @@ class HomeAssistantSkill(FallbackSkill):
         try:
             ha_entity = self.ha.find_entity(
                 entity, ['group', 'light'])
-        except ConnectionError:
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
@@ -297,14 +303,17 @@ class HomeAssistantSkill(FallbackSkill):
         try:
             ha_entity = self.ha.find_entity(
                 entity, ['automation', 'scene', 'script'])
-        except ConnectionError:
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return
-        ha_data = {'entity_id': ha_entity['id']}
+
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
                               "dev_name": entity})
             return
+        
+        ha_data = {'entity_id': ha_entity['id']}
 
         # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
@@ -334,8 +343,9 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Entity: %s" % entity)
         try:
             ha_entity = self.ha.find_entity(entity, ['sensor'])
-        except RequestException:
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
@@ -396,8 +406,9 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Entity: %s" % entity)
         try:
             ha_entity = self.ha.find_entity(entity, ['device_tracker'])
-        except (RequestException, ConnectionError):
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
@@ -427,8 +438,9 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Temperature: %s" % temperature)
         try:
             ha_entity = self.ha.find_entity(entity, ['climate'])
-        except (RequestException, ConnectionError):
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return
         if ha_entity is None:
             self.speak_dialog('homeassistant.device.unknown', data={
@@ -454,8 +466,9 @@ class HomeAssistantSkill(FallbackSkill):
         try:
             response = self.ha.engage_conversation(
                 message.data.get('utterance'))
-        except ConnectionError:
-            self.speak_dialog('homeassistant.error.offline')
+        except ConnectionError as e:
+            self.speak_dialog('homeassistant.error.offline', data={
+                                "exception": str(e)})
             return False
         # default non-parsing answer: "Sorry, I didn't understand that"
         answer = response.get('speech')
