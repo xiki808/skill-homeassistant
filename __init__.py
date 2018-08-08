@@ -68,13 +68,10 @@ class HomeAssistantSkill(FallbackSkill):
         self.settings.set_changed_callback(self.on_websettings_changed)
 
     def on_websettings_changed(self):
-        # Only attempt to load if the host is set
-        if self.settings.get('host', None):
-            try:
-                self._setup()
-            except Exception:
-                pass
-
+        # Force a setting refresh after the websettings changed
+        # Otherwise new settings will not be regarded
+        self._force_setup()
+        
     def __build_switch_intent(self):
         intent = IntentBuilder("switchIntent").require("SwitchActionKeyword") \
             .require("Action").require("Entity").build()
