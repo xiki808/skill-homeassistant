@@ -3,9 +3,19 @@ from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
-from requests.exceptions import ConnectionError, Timeout
+
+from requests.exceptions import (
+    ConnectionError,
+    RequestException,
+    Timeout,
+    InvalidURL,
+    URLRequired,
+    SSLError
+, HTTPError)
 
 from .ha_client import HomeAssistantClient
+import json
+from requests.packages.urllib3.exceptions import MaxRetryError
 
 __author__ = 'robconnolly, btotharye, nielstron'
 LOGGER = getLogger(__name__)
@@ -43,7 +53,7 @@ class HomeAssistantSkill(FallbackSkill):
                 # Check if conversation component is loaded at HA-server
                 # and activate fallback accordingly (ha-server/api/components)
                 # TODO: enable other tools like dialogflow
-                if (self.ha.find_component('conversation') and
+                if (self._handle_client_exception(self.ha.find_component, 'conversation') and
                         self.settings.get('enable_fallback') == 'true'):
                     self.enable_fallback = True
 
@@ -66,6 +76,7 @@ class HomeAssistantSkill(FallbackSkill):
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
         self.settings.set_changed_callback(self.on_websettings_changed)
+        self._setup()
 
     def on_websettings_changed(self):
         # Force a setting refresh after the websettings changed
@@ -101,33 +112,60 @@ class HomeAssistantSkill(FallbackSkill):
             "DeviceTrackerKeyword").require("Entity").build()
         # TODO - Identity location, proximity
         self.register_intent(intent, self.handle_tracker_intent)
-
-    def handle_switch_intent(self, message):
+    
+    ## Try to find an entity on the HAServer
+    # Creates dialogs for errors and speaks them
+    # Returns None if nothing was found
+    # Else returns entity that was found
+    def _find_entity(self, entity, domains):
         self._setup()
         if self.ha is None:
             self.speak_dialog('homeassistant.error.setup')
-            return
+            return False
+        # TODO if entity is 'all', 'any' or 'every' turn on
+        # every single entity not the whole group
+        ha_entity = self._handle_client_exception(self.ha.find_entity,
+            entity, domains)
+        if ha_entity is None:
+            self.speak_dialog('homeassistant.device.unknown', data={
+                              "dev_name": entity})
+        return ha_entity
+    
+    ## Calls passed method and catches often occurring exceptions
+    def _handle_client_exception(self, callback, *args, **kwargs):
+        try:
+            return callback(*args, **kwargs)
+        except Timeout:
+            self.speak_dialog('homeassistant.error.offline')
+        except (InvalidURL, URLRequired, MaxRetryError) as e:
+            self.speak_dialog('homeassistant.error.invalidurl', data={
+                'url': e.request.url})
+        except SSLError:
+            self.speak_dialog('homeassistant.error.ssl')
+        except HTTPError as e:
+            # check if due to wrong password
+            if e.response.status_code == 401:
+                self.speak_dialog('homeassistant.error.wrong_password')
+            else:
+                self.speak_dialog('homeassistant.error.http', data={
+                    'code': e.response.status_code,
+                    'reason': e.response.reason})
+        except (ConnectionError, RequestException) as exception:
+            # TODO find a nice member of any exception to output
+            self.speak_dialog('homeassistant.error', data={
+                    'url': exception.request.url})
+        return False
+    
+    def handle_switch_intent(self, message):
         LOGGER.debug("Starting Switch Intent")
         entity = message.data["Entity"]
         action = message.data["Action"]
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("Action: %s" % action)
-        # TODO if entity is 'all', 'any' or 'every' turn on
-        # every single entity not the whole group
-        try:
-            ha_entity = self.ha.find_entity(
-                entity, ['group', 'light', 'fan', 'switch', 'scene',
+        
+        ha_entity = self._find_entity(entity, ['group', 'light', 'fan', 'switch', 'scene',
                          'input_boolean', 'climate'])
-        except Timeout as e:
-            self.speak_dialog('homeassistant.error.offline')
-            return
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error', data={
-                    "exception": str(e)})
-            return
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+        if not ha_entity:
             return
         LOGGER.debug("Entity State: %s" % ha_entity['state'])
         ha_data = {'entity_id': ha_entity['id']}
@@ -164,10 +202,6 @@ class HomeAssistantSkill(FallbackSkill):
 
     @intent_file_handler('set.light.brightness.intent')
     def handle_light_set_intent(self, message):
-        self._setup()
-        if(self.ha is None):
-            self.speak_dialog('homeassistant.error.setup')
-            return
         entity = message.data["entity"]
         try:
             brightness_req = float(message.data["brightnessvalue"])
@@ -180,16 +214,9 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("Brightness Value: %s" % brightness_value)
         LOGGER.debug("Brightness Percent: %s" % brightness_percentage)
-        try:
-            ha_entity = self.ha.find_entity(
-                entity, ['group', 'light'])
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
-            return
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+
+        ha_entity = self._find_entity(entity, ['group', 'light'])
+        if not ha_entity:
             return
         ha_data = {'entity_id': ha_entity['id']}
 
@@ -205,10 +232,6 @@ class HomeAssistantSkill(FallbackSkill):
         return
 
     def handle_light_adjust_intent(self, message):
-        self._setup()
-        if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
-            return
         entity = message.data["Entity"]
         try:
             brightness_req = float(message.data["BrightnessValue"])
@@ -220,16 +243,9 @@ class HomeAssistantSkill(FallbackSkill):
         # brightness_percentage = int(brightness_req) # debating use
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("Brightness Value: %s" % brightness_value)
-        try:
-            ha_entity = self.ha.find_entity(
-                entity, ['group', 'light'])
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
-            return
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+        
+        ha_entity = self._find_entity(entity, ['group', 'light'])
+        if not ha_entity:
             return
         ha_data = {'entity_id': ha_entity['id']}
         # IDEA: set context for 'turn it off again' or similar
@@ -293,24 +309,12 @@ class HomeAssistantSkill(FallbackSkill):
             return
 
     def handle_automation_intent(self, message):
-        self._setup()
-        if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
-            return
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
-        # also handle scene and script requests
-        try:
-            ha_entity = self.ha.find_entity(
-                entity, ['automation', 'scene', 'script'])
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
-            return
+        ha_entity = self._find_entity(entity, ['automation', 'scene', 'script'])
+        LOGGER.debug("Still there! {}".format(str(ha_entity)))
 
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+        if not ha_entity:
             return
         
         ha_data = {'entity_id': ha_entity['id']}
@@ -335,21 +339,11 @@ class HomeAssistantSkill(FallbackSkill):
                                     data=ha_data)
 
     def handle_sensor_intent(self, message):
-        self._setup()
-        if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
-            return
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
-        try:
-            ha_entity = self.ha.find_entity(entity, ['sensor'])
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
-            return
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+
+        ha_entity = self._find_entity(entity, ['sensor'])
+        if not ha_entity:
             return
 
         entity = ha_entity['id']
@@ -398,21 +392,11 @@ class HomeAssistantSkill(FallbackSkill):
     # - overlapping command for directions modules
     # - (e.g. "How far is x from y?")
     def handle_tracker_intent(self, message):
-        self._setup()
-        if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
-            return
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
-        try:
-            ha_entity = self.ha.find_entity(entity, ['device_tracker'])
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
-            return
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+        
+        ha_entity = self._find_entity(entity, ['device_tracker'])
+        if not ha_entity:
             return
 
         # IDEA: set context for 'locate it again' or similar
@@ -427,24 +411,14 @@ class HomeAssistantSkill(FallbackSkill):
 
     @intent_file_handler('set.climate.intent')
     def handle_set_thermostat_intent(self, message):
-        self._setup()
-        if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
-            return
         entity = message.data["entity"]
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("This is the message data: %s" % message.data)
         temperature = message.data["temp"]
         LOGGER.debug("Temperature: %s" % temperature)
-        try:
-            ha_entity = self.ha.find_entity(entity, ['climate'])
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
-            return
-        if ha_entity is None:
-            self.speak_dialog('homeassistant.device.unknown', data={
-                              "dev_name": entity})
+        
+        ha_entity = self._find_entity(entity, ['climate'])
+        if not ha_entity:
             return
 
         climate_data = {'entity_id': ha_entity['id'], 'temperature': temperature}
@@ -463,12 +437,9 @@ class HomeAssistantSkill(FallbackSkill):
             self.speak_dialog('homeassistant.error.setup')
             return False
         # pass message to HA-server
-        try:
-            response = self.ha.engage_conversation(
-                message.data.get('utterance'))
-        except ConnectionError as e:
-            self.speak_dialog('homeassistant.error.offline', data={
-                                "exception": str(e)})
+        response = self._handle_client_exception(self.ha.engage_conversation,
+            message.data.get('utterance'))
+        if not response:
             return False
         # default non-parsing answer: "Sorry, I didn't understand that"
         answer = response.get('speech')
