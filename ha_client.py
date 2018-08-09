@@ -1,7 +1,6 @@
 from requests import get, post
 from fuzzywuzzy import fuzz
 import json
-from requests.exceptions import ConnectionError, RequestException, Timeout
 
 __author__ = 'btotharye'
 
@@ -10,40 +9,44 @@ TIMEOUT = 10
 
 
 class HomeAssistantClient(object):
+
     def __init__(self, host, password, portnum, ssl=False, verify=True):
         self.ssl = ssl
         self.verify = verify
-        if portnum is None or portnum == 0:
-            self.url = "https://%s" % host
         if self.ssl:
-            self.url = "https://%s:%d" % (host, portnum)
+            self.url = "https://{}".format(host)
         else:
-            self.url = "http://%s:%d" % (host, portnum)
+            self.url = "http:/{}".format(host)
+        if portnum:
+            self.url = "{}:{}".format(self.url, portnum)
         self.headers = {
             'x-ha-access': password,
             'Content-Type': 'application/json'
         }
 
     def _get_state(self):
+        """Get state object
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         if self.ssl:
-            try:
-                req = get("%s/api/states" %
-                          self.url, headers=self.headers,
-                          verify=self.verify, timeout=TIMEOUT)
-            except (Timeout, ConnectionError, KeyError, RequestException) as e:
-                raise ConnectionRefusedError(status="The home assistant server did not respond.")
+            req = get("{}/api/states".format(self.url), headers=self.headers,
+                      verify=self.verify, timeout=TIMEOUT)
         else:
-            try:
-                req = get("%s/api/states" % self.url, headers=self.headers,
-                          timeout=TIMEOUT)
-            except (Timeout, ConnectionError, KeyError, RequestException) as e:
-                raise ConnectionRefusedError(status="The home assistant server did not respond.")
-        if req.status_code == 200:
-            return req.json()
-        else:
-            raise ConnectionRefusedError(status="The home assistant server did not respond.")
+            req = get("{}/api/states".format(self.url), headers=self.headers,
+                      timeout=TIMEOUT)
+        req.raise_for_status()
+        return req.json()
 
     def find_entity(self, entity, types):
+        """Find entity with specified name, fuzzy matching
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         json_data = self._get_state()
         # require a score above 50%
         best_score = 50
@@ -80,11 +83,14 @@ class HomeAssistantClient(object):
                 except KeyError:
                     pass
             return best_entity
-    #
-    # checking the entity attributes to be used in the response dialog.
-    #
 
     def find_entity_attr(self, entity):
+        """checking the entity attributes to be used in the response dialog.
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         json_data = self._get_state()
 
         if json_data:
@@ -113,31 +119,47 @@ class HomeAssistantClient(object):
         return None
 
     def execute_service(self, domain, service, data):
+        """Execute service at HAServer
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         if self.ssl:
-            r = post("%s/api/services/%s/%s" % (self.url, domain, service),
+            r = post("{}/api/services/{}/{}".format(self.url, domain, service),
                      headers=self.headers, data=json.dumps(data),
                      verify=self.verify, timeout=TIMEOUT)
-            return r
         else:
-            r = post("%s/api/services/%s/%s" % (self.url, domain, service),
-                     headers=self.headers, data=json.dumps(data), timeout=TIMEOUT)
-            return r
+            r = post("{}/api/services/{}/{}".format(self.url, domain, service),
+                     headers=self.headers, data=json.dumps(data),
+                     timeout=TIMEOUT)
+        r.raise_for_status()
+        return r
 
     def find_component(self, component):
-        """Check if a component is loaded at the HA-Server"""
+        """Check if a component is loaded at the HA-Server
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
+        """
         if self.ssl:
-            req = get("%s/api/components" %
-                      self.url, headers=self.headers, verify=self.verify,
+            req = get("{}/api/components".format(self.url),
+                      headers=self.headers, verify=self.verify,
                       timeout=TIMEOUT)
         else:
             req = get("%s/api/components" % self.url, headers=self.headers,
                       timeout=TIMEOUT)
 
-        if req.status_code == 200:
-            return component in req.json()
+        req.raise_for_status()
+        return component in req.json()
 
     def engage_conversation(self, utterance):
         """Engage the conversation component at the Home Assistant server
+
+        Throws request Exceptions
+        (Subclasses of ConnectionError or RequestException,
+          raises HTTPErrors if non-Ok status code)
         Attributes:
             utterance    raw text message to be processed
         Return:
@@ -149,14 +171,17 @@ class HomeAssistantClient(object):
             "text": utterance
         }
         if self.ssl:
-            return post("%s/api/conversation/process" % (self.url),
-                        headers=self.headers,
-                        data=json.dumps(data),
-                        verify=self.verify,
-                        timeout=TIMEOUT
-                        ).json()['speech']['plain']
+            r = post("{}/api/conversation/process".format(self.url),
+                     headers=self.headers,
+                     data=json.dumps(data),
+                     verify=self.verify,
+                     timeout=TIMEOUT
+                     )
         else:
-            return post("%s/api/conversation/process" % (self.url),
-                        headers=self.headers,
-                        data=json.dumps(data),
-                        timeout=TIMEOUT).json()['speech']['plain']
+            r = post("{}/api/conversation/process".format(self.url),
+                     headers=self.headers,
+                     data=json.dumps(data),
+                     timeout=TIMEOUT
+                     )
+        r.raise_for_status()
+        return r.json()['speech']['plain']
