@@ -68,18 +68,14 @@ class HomeAssistantSkill(FallbackSkill):
         self.settings.set_changed_callback(self.on_websettings_changed)
 
     def on_websettings_changed(self):
-        # Only attempt to load if the host is set
-        if self.settings.get('host', None):
-            try:
-                self._setup()
-            except Exception:
-                pass
+        # Force a setting refresh after the websettings changed
+        # Otherwise new settings will not be regarded
+        self._force_setup()
 
     def __build_switch_intent(self):
         intent = IntentBuilder("switchIntent").require("SwitchActionKeyword") \
             .require("Action").require("Entity").build()
         self.register_intent(intent, self.handle_switch_intent)
-
 
     def __build_light_adjust_intent(self):
         intent = IntentBuilder("LightAdjBrightnessIntent") \
@@ -105,7 +101,6 @@ class HomeAssistantSkill(FallbackSkill):
             "DeviceTrackerKeyword").require("Entity").build()
         # TODO - Identity location, proximity
         self.register_intent(intent, self.handle_tracker_intent)
-
 
     def handle_switch_intent(self, message):
         self._setup()
@@ -447,7 +442,6 @@ class HomeAssistantSkill(FallbackSkill):
                           "dev_name": climate_attr['name'],
                           "value": temperature,
                           "unit": climate_attr['unit_measure']})
-
 
     def handle_fallback(self, message):
         if not self.enable_fallback:
