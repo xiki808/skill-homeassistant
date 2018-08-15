@@ -1,6 +1,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
+from mycroft.util.format import nice_number
 from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
 
@@ -365,7 +366,7 @@ class HomeAssistantSkill(FallbackSkill):
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
 
-        ha_entity = self._find_entity(entity, ['sensor'])
+        ha_entity = self._find_entity(entity, ['sensor', 'switch'])
         if not ha_entity:
             return
 
@@ -375,10 +376,7 @@ class HomeAssistantSkill(FallbackSkill):
         # self.set_context('Entity', ha_entity['dev_name'])
 
         unit_measurement = self.ha.find_entity_attr(entity)
-        if unit_measurement['state'] is not None:
-            sensor_unit = unit_measurement['unit_measure']
-        else:
-            sensor_unit = ''
+        sensor_unit = unit_measurement.get('unit_measure') or ''
 
         sensor_name = unit_measurement['name']
         sensor_state = unit_measurement['state']
@@ -399,6 +397,12 @@ class HomeAssistantSkill(FallbackSkill):
                         quantity.uncertainty <= 0.5):
                     sensor_unit = quantity.unit.name
                     sensor_state = quantity.value
+
+        try:
+            value = float(sensor_state)
+            sensor_state = nice_number(value, lang=self.language)
+        except ValueError:
+            pass
 
         self.speak_dialog('homeassistant.sensor', data={
             "dev_name": sensor_name,
