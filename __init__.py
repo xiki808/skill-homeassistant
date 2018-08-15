@@ -48,16 +48,13 @@ class HomeAssistantSkill(FallbackSkill):
                 self.settings.get('ssl') == 'true',
                 self.settings.get('verify') == 'true'
             )
-            if self.ha:
+            if self.ha.connected():
                 # Check if conversation component is loaded at HA-server
                 # and activate fallback accordingly (ha-server/api/components)
                 # TODO: enable other tools like dialogflow
-                try:
-                    conversation_activated = self.ha.find_component(
-                        'conversation'
-                    )
-                except (ConnectionError, RequestException):
-                    conversation_activated = False
+                conversation_activated = self.ha.find_component(
+                    'conversation'
+                )
                 if conversation_activated:
                     self.enable_fallback = \
                         self.settings.get('enable_fallback') == 'true'
