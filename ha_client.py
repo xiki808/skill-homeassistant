@@ -1,6 +1,8 @@
 from requests import get, post
 from fuzzywuzzy import fuzz
 import json
+from requests.exceptions import Timeout, RequestException
+
 
 __author__ = 'btotharye'
 
@@ -39,6 +41,13 @@ class HomeAssistantClient(object):
                       timeout=TIMEOUT)
         req.raise_for_status()
         return req.json()
+
+    def connected(self):
+        try:
+            self._get_state()
+            return True
+        except (Timeout, ConnectionError, RequestException):
+            return False
 
     def find_entity(self, entity, types):
         """Find entity with specified name, fuzzy matching
