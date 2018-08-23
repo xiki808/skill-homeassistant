@@ -18,7 +18,7 @@ class HomeAssistantClient(object):
         if self.ssl:
             self.url = "https://{}".format(host)
         else:
-            self.url = "http:/{}".format(host)
+            self.url = "http://{}".format(host)
         if portnum:
             self.url = "{}:{}".format(self.url, portnum)
         self.headers = {
