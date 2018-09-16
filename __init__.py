@@ -46,8 +46,8 @@ class HomeAssistantSkill(FallbackSkill):
                 self.settings.get('host'),
                 self.settings.get('password'),
                 portnumber,
-                self.settings.get('ssl') == 'true',
-                self.settings.get('verify') == 'true'
+                self.settings.get('ssl'),
+                self.settings.get('verify')
             )
             if self.ha.connected():
                 # Check if conversation component is loaded at HA-server
