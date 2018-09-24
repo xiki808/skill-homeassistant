@@ -12,7 +12,7 @@ TIMEOUT = 10
 
 class HomeAssistantClient(object):
 
-    def __init__(self, host, password, portnum, ssl=False, verify=True):
+    def __init__(self, host, token, portnum, ssl=False, verify=True):
         self.ssl = ssl
         self.verify = verify
         if self.ssl:
@@ -22,7 +22,7 @@ class HomeAssistantClient(object):
         if portnum:
             self.url = "{}:{}".format(self.url, portnum)
         self.headers = {
-            'x-ha-access': password,
+            'Authorization': token,
             'Content-Type': 'application/json'
         }
 

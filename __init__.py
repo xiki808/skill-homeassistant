@@ -44,7 +44,7 @@ class HomeAssistantSkill(FallbackSkill):
                 portnumber = 0
             self.ha = HomeAssistantClient(
                 self.settings.get('host'),
-                self.settings.get('password'),
+                self.settings.get('token'),
                 portnumber,
                 self.settings.get('ssl'),
                 self.settings.get('verify')
