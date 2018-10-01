@@ -9,6 +9,7 @@
 
 
 
+
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
 See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home-automation for a general overview of Mycroft AI and Home Assistant
