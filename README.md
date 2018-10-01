@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/btotharye/mycroft-homeassistant/badge.svg?branch=master)](https://coveralls.io/github/btotharye/mycroft-homeassistant?branch=master)
 [![Discord](https://img.shields.io/discord/348442860510642176.svg)](https://discord.gg/Xnn89dB)
 
-
+...
 
 
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
