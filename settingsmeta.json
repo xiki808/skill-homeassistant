@@ -13,9 +13,9 @@
                       "value": ""
                   },
                   {
-                      "name": "password",
+                      "name": "token",
                       "type": "password",
-                      "label": "Password",
+                      "label": "Long-Lived Access Tokens",
                       "value": ""
                   },
                   {

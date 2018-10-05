@@ -7,6 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/btotharye/mycroft-homeassistant/badge.svg?branch=master)](https://coveralls.io/github/btotharye/mycroft-homeassistant?branch=master)
 [![Discord](https://img.shields.io/discord/348442860510642176.svg)](https://discord.gg/Xnn89dB)
 
+...
 
 
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
@@ -14,11 +15,11 @@ based off the original code from https://github.com/BongoEADGC6/mycroft-home-ass
 See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home-automation for a general overview of Mycroft AI and Home Assistant
 
 # Updates
-Now confirmed working for 18.2.6 beta.  Make sure you have your home assistant settings filled out on home.mycroft.ai.
+Now confirmed working for mycroft 18.8.1. 
 
-Now supports Climate control to change the temperature via `set hallway thermostat to 75 degrees` hallway thermostat is our entity in this phrase.
+Now using the new Long-Lived Access Tokens instead of legacy api password. 
 
-Testrunner tests are now setup as well to test intents.
+Make sure you have your home assistant settings filled out on home.mycroft.ai.
 
 This is a skill to add [Home Assistant](https://home-assistant.io) support to
 [Mycroft](https://mycroft.ai). Currently is supports turning on and off several
@@ -42,21 +43,16 @@ You can donate directly via my [Blog](https://geekedoutsolutions.com/donations/g
 Or become a [Patreon](https://www.patreon.com/Geekedoutsol) - I offer special posts and tutorials to my Patreons that aren't public.
 
 ## Installation
-Before installation ensure you have python-dev package installed for your OS.  For debian this would be `apt-get install python-dev` it is required for the levenstein package.
-
-
 Should be able to install this now via just saying `Hey Mycroft, install skill home assistant` it will then confirm if you want to install it and say yes and you are good to go.
 
 Can also be installed via `msm install https://github.com/btotharye/mycroft-homeassistant.git`
-
-
-## Demo Home Assistant
-You can see a demo of Home Assistant at http://167.99.144.205:8123 using the password "password".  You can also plug these settings into the home.mycroft.ai skill setting mentioned below to test your mycroft instance with the demo instance of home assistant.
 
 ## Configuration
 This skill utilizes the skillsettings.json file which allows you to configure this skill via home.mycroft.ai after a few minutes of having the skill installed you should see something like below in the https://home.mycroft.ai/#/skill location:
 
 Fill this out with your appropriate home assistant information and hit save.
+
+You create the Long-Lived Access Token on the user profile page
 
 ![Screenshot](screenshot.JPG?raw=true)
 
