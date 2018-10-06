@@ -22,7 +22,7 @@ class HomeAssistantClient(object):
         if portnum:
             self.url = "{}:{}".format(self.url, portnum)
         self.headers = {
-            'Authorization': token,
+            'Authorization': "Bearer {}".format(token),
             'Content-Type': 'application/json'
         }
 
