@@ -1,5 +1,5 @@
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import FallbackSkill
+from mycroft.skills.core import FallbackSkill, intent_handler
 from mycroft.util.log import getLogger
 from mycroft.util.format import nice_number
 from mycroft import MycroftSkill, intent_file_handler
