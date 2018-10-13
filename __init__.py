@@ -92,7 +92,7 @@ class HomeAssistantSkill(FallbackSkill):
         # Otherwise new settings will not be regarded
         self._force_setup()
 
-    def handle_switch_intent(self):
+    def __build_switch_intent(self):
         intent = IntentBuilder("switchIntent").require(
             "SwitchActionKeyword").require("Action").require("Entity").build()
         self.register_intent(intent, self.handle_switch_intent)
