@@ -7,7 +7,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/btotharye/mycroft-homeassistant/badge.svg?branch=master)](https://coveralls.io/github/btotharye/mycroft-homeassistant?branch=master)
 [![Discord](https://img.shields.io/discord/348442860510642176.svg)](https://discord.gg/Xnn89dB)
 
-...
 
 # <img src='https://rawgithub.com/FortAwesome/Font-Awesome/master/advanced-options/raw-svg/solid/home.svg' card_color='#00BFFF' width='50' height='50' style='vertical-align:bottom'/> Home Assistant
 Control your home assistant devices via voice.
