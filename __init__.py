@@ -28,7 +28,7 @@ class HomeAssistantSkill(FallbackSkill):
 
     def __init__(self):
         MycroftSkill.__init__(self)
-        super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
+        super().init(name="HomeAssistantSkill")
         self.ha = None
         self.enable_fallback = False
 
@@ -92,7 +92,9 @@ class HomeAssistantSkill(FallbackSkill):
         # Otherwise new settings will not be regarded
         self._force_setup()
 
-    def __build_switch_intent(self):
+    @intent_handler(IntentBuilder("").require(
+        "SwitchActionKeyword").require("Action").require("Entity"))
+    def handle_switch_intent(self):
         intent = IntentBuilder("switchIntent").require(
             "SwitchActionKeyword").require("Action").require("Entity").build()
         self.register_intent(intent, self.handle_switch_intent)
