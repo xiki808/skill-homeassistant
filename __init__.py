@@ -1,5 +1,5 @@
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import FallbackSkill
+from mycroft.skills.core import FallbackSkill, intent_handler
 from mycroft.util.log import getLogger
 from mycroft.util.format import nice_number
 from mycroft import MycroftSkill, intent_file_handler
@@ -28,7 +28,7 @@ class HomeAssistantSkill(FallbackSkill):
 
     def __init__(self):
         MycroftSkill.__init__(self)
-        super(HomeAssistantSkill, self).__init__(name="HomeAssistantSkill")
+        super().__init__(name="HomeAssistantSkill")
         self.ha = None
         self.enable_fallback = False
 
