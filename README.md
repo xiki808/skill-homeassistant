@@ -23,6 +23,14 @@ based off the original code from https://github.com/BongoEADGC6/mycroft-home-ass
 
 See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home-automation for a general overview of Mycroft AI and Home Assistant
 
+# Testing Against Demo Home Assistant
+You can use the following information to test against a hosted demo of home assistant:
+```
+host: hademo.btotharye.com
+token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJiNzdhOWNlMmZkNzU0MWM1OTZkMWQ5ZTZlMWVkNzdmZSIsImlhdCI6MTUzOTQ0NjM1MywiZXhwIjoxODU0ODA2MzUzfQ.ILrZhuw0vsryPcj0pK8PlSVtRTF_u6VEfdA_j7PlAG8
+```
+Put the above in the home.mycroft.ai site for the skill after installing it and you can now test against a demo home instance.  You can see the UI page by going to http://hademo.btotharye.com:8123 with user `demo` and pw `demo` make sure the SSL options are unchecked.
+
 # Updates
 Now confirmed working for mycroft 18.8.1. 
 
