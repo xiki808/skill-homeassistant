@@ -28,7 +28,7 @@ class HomeAssistantSkill(FallbackSkill):
 
     def __init__(self):
         MycroftSkill.__init__(self)
-        super().init(name="HomeAssistantSkill")
+        super(HomeAssistantSkill, self).init(name="HomeAssistantSkill")
         self.ha = None
         self.enable_fallback = False
 
