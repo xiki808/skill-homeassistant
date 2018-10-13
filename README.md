@@ -9,6 +9,16 @@
 
 ...
 
+# <img src='https://rawgithub.com/FortAwesome/Font-Awesome/master/advanced-options/raw-svg/solid/home.svg' card_color='#00BFFF' width='50' height='50' style='vertical-align:bottom'/> Home Assistant
+Control your home assistant devices via voice.
+
+## About 
+Home Assistant is a open source project that lets you control all your smart devices in a single easy to use UI.  This skill talks to Home Assistant's REST API and controls devices and entities you have configured.  Control your lights, garage door, thermostats and more.
+
+## Examples 
+* "Hey Mycroft, turn on office light"
+* "Hey Mycroft, turn off bedroom lights"
+* "Hey Mycroft, turn on the AC (AC is a switch object in Home Assistant)"
 
 based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
 
@@ -89,23 +99,6 @@ def handle_lighting_intent(self, message):
         ha_data = {'entity_id': ha_entity['id']}
 ```
 
-
-## Supported Phrases/Entities
-Currently the phrases are:
-* Hey Mycroft, turn on office (turn on the group office)
-* Hey Mycroft, turn on office light (to turn on the light named office)
-* Hey Mycroft, activate Bedtime (Bedtime is an automation)
-* Hey Mycroft, turn on Movietime (Movietime is a scene)
-* Hey Mycroft, status of thermostat (For sensors in homeassistant)
-* Hey Mycroft, locate/where brian (Brian is a device tracker object)
-* Hey Mycroft, what is the current living room temp
-* Hey Mycroft, what is the current season
-* Hey Mycroft, tell me the current (status|state|value|sensor) of the living room thermostat temperature
-* Hey Mycroft, set the hallway thermostat to 75 degrees
-* Hey Mycroft, set the hallway thermostat temperature to 75 degrees
-* Hey Mycroft, change the hallway thermostat temperature to 75 degrees
-
-
 ## TODO
  * Script intents processing
  * New intent for opening/closing cover entities
@@ -123,6 +116,18 @@ All contributions welcome:
  * Fork
  * Write code
  * Submit merge request
+
+## Credits 
+@btotharye
+
+## Category
+**IoT**
+
+## Tags
+#homeautomation
+#iot
+#homeassistant
+#smarthome
 
 ## Licence
 
