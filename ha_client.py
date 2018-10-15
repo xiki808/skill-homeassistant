@@ -60,38 +60,38 @@ class HomeAssistantClient(object):
         # require a score above 50%
         best_score = 50
         best_entity = None
-        if json_data:
-            for state in json_data:
-                try:
-                    if state['entity_id'].split(".")[0] in types:
-                        # something like temperature outside
-                        # should score on "outside temperature sensor"
-                        # and repetitions should not count on my behalf
-                        score = fuzz.token_sort_ratio(
-                            entity,
-                            state['attributes']['friendly_name'].lower())
-                        if score > best_score:
-                            best_score = score
-                            best_entity = {
-                                "id": state['entity_id'],
-                                "dev_name": state['attributes']
-                                ['friendly_name'],
-                                "state": state['state'],
-                                "best_score": best_score}
-                        score = fuzz.token_sort_ratio(
-                            entity,
-                            state['entity_id'].lower())
-                        if score > best_score:
-                            best_score = score
-                            best_entity = {
-                                "id": state['entity_id'],
-                                "dev_name": state['attributes']
-                                ['friendly_name'],
-                                "state": state['state'],
-                                "best_score": best_score}
-                except KeyError:
-                    pass
-            return best_entity
+        if not json_data:
+            return
+
+        for state in json_data:
+            try:
+                if not state['entity_id'].split(".")[0] in types:
+                    continue
+                # something like temperature outside
+                # should score on "outside temperature sensor"
+                # and repetitions should not count on my behalf
+                for name in [
+                    state['entity_id'],
+                    state['attributes']['friendly_name']
+                ]:
+                    score = fuzz.token_sort_ratio(
+                        entity.lower(),
+                        name.lower()
+                    )
+                    if score > best_score:
+                        best_score = score
+                        best_entity = {
+                            "id": state['entity_id'],
+                            "dev_name":
+                                state['attributes'].get(
+                                    'friendly_name',
+                                    state['entity_id']
+                                ),
+                            "state": state['state'],
+                            "best_score": best_score}
+            except KeyError:
+                pass
+        return best_entity
 
     def find_entity_attr(self, entity):
         """checking the entity attributes to be used in the response dialog.
