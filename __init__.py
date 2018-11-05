@@ -33,13 +33,24 @@ class HomeAssistantSkill(FallbackSkill):
         self.enable_fallback = False
 
     def _setup(self, force=False):
-        if self.settings is not None and (force or self.ha is None):
+        if not self.settings:
+            LOGGER.error("settings is not set")
+            return
+        if not self.settings.get('host'):
+            LOGGER.error("host setting is not set")
+            return
+        if not len(self.settings.get('host')):
+            LOGGER.error("host setting is empty")
+            return
+        if (force or self.ha is None):
             portnumber = self.settings.get('portnum')
             try:
                 portnumber = int(portnumber)
             except TypeError:
+                LOGGER.error("type error , using default post 8123")
                 portnumber = 8123
             except ValueError:
+                LOGGER.error("value error, using port 0")
                 # String might be some rubbish (like '')
                 portnumber = 0
             self.ha = HomeAssistantClient(
@@ -61,7 +72,7 @@ class HomeAssistantSkill(FallbackSkill):
                         self.settings.get('enable_fallback') == 'true'
 
     def _force_setup(self):
-        LOGGER.debug('Creating a new HomeAssistant-Client')
+        LOGGER.debug('Force setup')
         self._setup(True)
 
     def initialize(self):
