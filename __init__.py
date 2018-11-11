@@ -1,7 +1,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import FallbackSkill, intent_handler
 from mycroft.util.log import getLogger
-from mycroft.util.format import nice_number
+from mycroft.util.format import nice_number, nice_unit
 from mycroft import MycroftSkill, intent_file_handler
 from os.path import dirname, join
 
@@ -388,23 +388,13 @@ class HomeAssistantSkill(FallbackSkill):
 
         sensor_name = unit_measurement['name']
         sensor_state = unit_measurement['state']
-        # extract unit for correct pronounciation
-        # this is fully optional
-        try:
-            from quantulum import parser
-            quantulumImport = True
-        except ImportError:
-            quantulumImport = False
 
-        if quantulumImport and unit_measurement != '':
-            quantity = parser.parse((u'{} is {} {}'.format(
-                sensor_name, sensor_state, sensor_unit)))
-            if len(quantity) > 0:
-                quantity = quantity[0]
-                if (quantity.unit.name != "dimensionless" and
-                        quantity.uncertainty <= 0.5):
-                    sensor_unit = quantity.unit.name
-                    sensor_state = quantity.value
+        # Use the mycroft util "nice_unit" method on the unit
+        sensor_unit = nice_unit(
+            sensor_unit,
+            "{}, {} {}".format(sensor_name, sensor_state, sensor_name),
+            lang=self.language
+        )
 
         try:
             value = float(sensor_state)
