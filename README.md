@@ -135,6 +135,15 @@ All contributions welcome:
 #iot
 #homeassistant
 #smarthome
+#hue
+#smartbulb
+#light
+#lighting
+#lights
+#nest
+#temperature
+#thermostat
+#lifx
 
 ## Licence
 
