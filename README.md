@@ -1,6 +1,7 @@
 # Home Assistant Skill for Mycroft
 
 **UPDATE PLEASE READ**
+
 I have decided to not continue supporting this or maintain this skill any longer, I have opted to start using other platforms for my voice needs.
 
 Feel free to take this over but I will be archiving this repo.
