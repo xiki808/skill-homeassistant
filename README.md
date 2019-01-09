@@ -2,7 +2,7 @@
 
 This skill was orphaned and then adopted by the [United Skill Writers](https://community.mycroft.ai/t/united-skill-writers-draft) team
 
-originally created by [BongoEADGC6](https://github.com/BongoEADGC6/mycroft-home-assistant) and then forked by [btotharye](https://github.com/btotharye)
+originally created by [BongoEADGC6](https://github.com/BongoEADGC6/mycroft-home-assistant), forked by [eclarity](https://github.com/eClarity/mycroft-homeassistant) and then by [btotharye](https://github.com/btotharye)
 
 ## About 
 Home Assistant is a open source project that lets you control all your smart devices in a single easy to use UI.  This skill talks to Home Assistant's REST API and controls devices and entities you have configured.  Control your lights, garage door, thermostats and more.
