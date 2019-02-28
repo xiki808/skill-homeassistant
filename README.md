@@ -1,61 +1,36 @@
-# Home Assistant Skill for Mycroft
-[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/btotharye)
-
-
 [![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) 
 [![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
 [![Coverage Status](https://coveralls.io/repos/github/btotharye/mycroft-homeassistant/badge.svg?branch=master)](https://coveralls.io/github/btotharye/mycroft-homeassistant?branch=master)
 [![Discord](https://img.shields.io/discord/348442860510642176.svg)](https://discord.gg/Xnn89dB)
 
-...
-
-# <img src='https://rawgithub.com/FortAwesome/Font-Awesome/master/advanced-options/raw-svg/solid/home.svg' card_color='#00BFFF' width='50' height='50' style='vertical-align:bottom'/> Home Assistant
-Control your home assistant devices via voice.
+# <img src='https://raw.githack.com/FortAwesome/Font-Awesome/master/svgs/solid/home.svg' card_color='#000000' width='50' height='50' style='vertical-align:bottom'/> Home Assistant
+Control Home Assistant devices
 
 ## About 
-Home Assistant is a open source project that lets you control all your smart devices in a single easy to use UI.  This skill talks to Home Assistant's REST API and controls devices and entities you have configured.  Control your lights, garage door, thermostats and more.
+[Home Assistant](https://www.home-assistant.io/) lets you control all your smart devices in a single easy to use interface. This skill uses the open source Home Assistant's APIs to control devices and entities. Control your lights, garage door, thermostats and more using your voice!
+
+Currently the following entity types are supported: `light`, `switch`, `scene`, `climate`, `groups` and `input_boolean`
 
 ## Examples 
-* "Hey Mycroft, turn on office light"
-* "Hey Mycroft, turn off bedroom lights"
-* "Hey Mycroft, turn on the AC (AC is a switch object in Home Assistant)"
+* "Turn on the office light"
+* "Turn off bedroom lights"
+* "Turn on on the AC"
 
-based off the original code from https://github.com/BongoEADGC6/mycroft-home-assistant, spun off my own version since they seem to be inactive.
+## Credits 
+@BongoEADGC6
+@btotharye
+Mycroft AI (@mycroftai)
 
-See https://geekedoutsolutions.com/using-home-assistant-with-mycroft-ai-for-home-automation for a general overview of Mycroft AI and Home Assistant
+## Category
+**IoT**
 
-# Updates
-Now confirmed working for mycroft 18.8.1. 
+## Tags
+#homeautomation
+#iot
+#homeassistant
+#smarthome
 
-Now using the new Long-Lived Access Tokens instead of legacy api password. 
 
-Make sure you have your home assistant settings filled out on home.mycroft.ai.
-
-This is a skill to add [Home Assistant](https://home-assistant.io) support to
-[Mycroft](https://mycroft.ai). Currently is supports turning on and off several
-entity types (`light`, `switch`, `scene`, `climate`, `groups` and `input_boolean`).
-
-## Support/Help
-You can always find me in the mycroft mattermost channel here, https://chat.mycroft.ai
-
-If you want to join my official discord where I will have a chatbot helper and more you can join via https://discord.gg/Xnn89dB
-
-If you like this and want to say thanks check out my [Patreon](https://www.patreon.com/Geekedoutsol) I also include special posts here for my Patrons.
-
-## Donate
-
-If you liked this project, you can donate to support it and new features and also help me justify spending more time on this project.
-
-You can donate directly via my [Blog](https://geekedoutsolutions.com/donations/geeked-out-donation) or any of the other options listed below.
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=brianhh1230%40gmail%2ecom&lc=US&item_name=Geeked%20Out%20Solutions&no_note=0&cn=Add%20special%20instructions%20to%20the%20seller%3a&no_shipping=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
-
-Or become a [Patreon](https://www.patreon.com/Geekedoutsol) - I offer special posts and tutorials to my Patreons that aren't public.
-
-## Installation
-Should be able to install this now via just saying `Hey Mycroft, install skill home assistant` it will then confirm if you want to install it and say yes and you are good to go.
-
-Can also be installed via `msm install https://github.com/btotharye/mycroft-homeassistant.git`
 
 ## Configuration
 This skill utilizes the skillsettings.json file which allows you to configure this skill via home.mycroft.ai after a few minutes of having the skill installed you should see something like below in the https://home.mycroft.ai/#/skill location:
@@ -108,27 +83,3 @@ def handle_lighting_intent(self, message):
 
 ## In Development
 * Increasing and Decreasing Climate controls
-
-## Contributing
-
-All contributions welcome:
-
- * Fork
- * Write code
- * Submit merge request
-
-## Credits 
-@btotharye
-
-## Category
-**IoT**
-
-## Tags
-#homeautomation
-#iot
-#homeassistant
-#smarthome
-
-## Licence
-
-See [`LICENCE`](https://gitlab.com/robconnolly/mycroft-home-assistant/blob/master/LICENSE).
