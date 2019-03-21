@@ -147,8 +147,12 @@ class HomeAssistantSkill(FallbackSkill):
         except Timeout:
             self.speak_dialog('homeassistant.error.offline')
         except (InvalidURL, URLRequired, MaxRetryError) as e:
-            self.speak_dialog('homeassistant.error.invalidurl', data={
+            if e.request.url is True:
+                self.speak_dialog('homeassistant.error.invalidurl', data={
                 'url': e.request.url})
+            elif e.request.url is False:
+                # There is no url configured
+                self.speak_dialog('homeassistant.error.needurl')
         except SSLError:
             self.speak_dialog('homeassistant.error.ssl')
         except HTTPError as e:
