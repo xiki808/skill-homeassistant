@@ -1,5 +1,5 @@
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import FallbackSkill, intent_handler
+from mycroft.skills.common_iot_skill import CommonIoTSkill
 from mycroft.util.log import getLogger
 from mycroft.util.format import nice_number
 from mycroft import MycroftSkill, intent_file_handler
@@ -12,7 +12,7 @@ from requests.exceptions import (
     URLRequired,
     SSLError,
     HTTPError)
-from requests.packages.urllib3.exceptions import MaxRetryError
+from urllib3.exceptions import MaxRetryError
 
 from .ha_client import HomeAssistantClient
 
@@ -24,13 +24,12 @@ LOGGER = getLogger(__name__)
 TIMEOUT = 10
 
 
-class HomeAssistantSkill(FallbackSkill):
+class HomeAssistantSkill(CommonIoTSkill):
 
     def __init__(self):
         MycroftSkill.__init__(self)
         super().__init__(name="HomeAssistantSkill")
         self.ha = None
-        self.enable_fallback = False
 
     def _setup(self, force=False):
         if self.settings is not None and (force or self.ha is None):
@@ -49,16 +48,6 @@ class HomeAssistantSkill(FallbackSkill):
                 self.settings.get('ssl'),
                 self.settings.get('verify')
             )
-            if self.ha.connected():
-                # Check if conversation component is loaded at HA-server
-                # and activate fallback accordingly (ha-server/api/components)
-                # TODO: enable other tools like dialogflow
-                conversation_activated = self.ha.find_component(
-                    'conversation'
-                )
-                if conversation_activated:
-                    self.enable_fallback = \
-                        self.settings.get('enable_fallback') == 'true'
 
     def _force_setup(self):
         LOGGER.debug('Creating a new HomeAssistant-Client')
@@ -81,8 +70,6 @@ class HomeAssistantSkill(FallbackSkill):
             'set.light.brightness.intent',
             self.handle_light_set_intent
         )
-        # Needs higher priority than general fallback skills
-        self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
         self.settings.set_changed_callback(self.on_websettings_changed)
         self._setup()
@@ -458,34 +445,7 @@ class HomeAssistantSkill(FallbackSkill):
                               "value": temperature,
                               "unit": climate_attr['unit_measure']})
 
-    def handle_fallback(self, message):
-        if not self.enable_fallback:
-            return False
-        self._setup()
-        if self.ha is None:
-            self.speak_dialog('homeassistant.error.setup')
-            return False
-        # pass message to HA-server
-        response = self._handle_client_exception(
-            self.ha.engage_conversation,
-            message.data.get('utterance'))
-        if not response:
-            return False
-        # default non-parsing answer: "Sorry, I didn't understand that"
-        answer = response.get('speech')
-        if not answer or answer == "Sorry, I didn't understand that":
-            return False
-
-        asked_question = False
-        # TODO: maybe enable conversation here if server asks sth like
-        # "In which room?" => answer should be directly passed to this skill
-        if answer.endswith("?"):
-            asked_question = True
-        self.speak(answer, expect_response=asked_question)
-        return True
-
     def shutdown(self):
-        self.remove_fallback(self.handle_fallback)
         super(HomeAssistantSkill, self).shutdown()
 
     def stop(self):
