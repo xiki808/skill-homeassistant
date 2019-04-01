@@ -45,8 +45,13 @@ class HomeAssistantApi():
     def _post(self, endpoint: str, data: dict):
         return self._request('POST', endpoint, data)
 
-    def get_states(self):
-        return self._get("states")
+    def get_states(self, entity_id: str = None):
+        path = "states"
+
+        if entity_id:
+            path += "/" + entity_id
+
+        return self._get(path)
 
     def get_services(self):
         return self._get("services")
@@ -54,6 +59,7 @@ class HomeAssistantApi():
     def run_service(self, domain: str, service: str, data: dict):
         endpoint = "services/{domain}/{service}".format(
             domain=domain, service=service)
+        print(endpoint, data)
         return self._post(endpoint, data)
 
 

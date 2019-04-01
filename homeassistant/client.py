@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, List, Dict
 
 from .api import HomeAssistantApi
 
@@ -43,6 +43,19 @@ class HomeAssistantClient():
         states = self._api.get_states().json()
         return {state['attributes'].get('friendly_name'): state['entity_id']
                 for state in states}
+
+    def get_states(self, entity_id = None):
+        states = self._api.get_states(entity_id).json()
+
+        if entity_id:
+            states = [states]
+
+        return  states
+
+    def run_services(self, domain: str, service: str, states: List[Dict]):
+        # TODO Make this async
+        for state in states:
+            self.run_service(domain, service, state)
 
     def run_service(self, domain: str, service: str, data: dict):
         self._api.run_service(domain, service, data)
