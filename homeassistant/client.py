@@ -41,7 +41,7 @@ class HomeAssistantClient():
     @cache
     def entities(self):
         states = self._api.get_states().json()
-        return {state['attributes'].get('friendly_name'): state['entity_id']
+        return {state['entity_id']: state['attributes'].get('friendly_name')
                 for state in states}
 
     def get_states(self, entity_id = None):
