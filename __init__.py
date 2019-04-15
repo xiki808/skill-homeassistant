@@ -190,7 +190,8 @@ class HomeAssistantSkill(CommonIoTSkill):
             action = self._invert_action(action)
             return self._can_handle_temperature(action, entity, _HIGH)
 
-        # TODO - handle switches
+        if thing == thing.SWITCH:
+            return self._can_handle_switch(action, entity)
 
         return False, None
 
@@ -203,6 +204,15 @@ class HomeAssistantSkill(CommonIoTSkill):
             action = Action.INCREASE
         return action
 
+    def _can_handle_switch(self, action: Action, entity_id: str):
+        simple_actions = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
+        if action in simple_actions:
+            data = {_DOMAIN: _SWITCH, _SERVICE: simple_actions[action]}
+            states = [dict()]
+            if entity_id:
+                states[0][_ENTITY_ID] = entity_id
+            data[_STATES] = states
+            return True, data
 
     def _can_handle_lights(self, action: Action, attribute: Attribute, entity_id: str):
         simple_actions = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
