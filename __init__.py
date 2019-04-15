@@ -18,15 +18,22 @@ _BRIGHTNESS = "brightness"
 _CLIMATE = "climate"
 _DOMAIN = "domain"
 _ENTITY_ID = "entity_id"
+_HIGH = "target_temp_high"
 _LIGHT = "light"
+_LOW = "target_temp_low"
 _SERVICE = "service"
 _STATES = "states"
 _SWITCH = "switch"
+_TEMPERATURE = "temperature"
+
 
 
 _THING_TO_DOMAIN = {
     Thing.LIGHT: _LIGHT,
     Thing.THERMOSTAT: _CLIMATE,
+    Thing.TEMPERATURE: _CLIMATE,
+    Thing.HEAT: _CLIMATE,
+    Thing.AIR_CONDITIONING: _CLIMATE,
     Thing.SWITCH: _SWITCH,
 }
 
@@ -44,9 +51,7 @@ _DOMAINS = {
             Action.DECREASE,
         },
         _ATTRIBUTES: {
-            Attribute.TEMPERATURE,
-            Attribute.HEAT,
-            Attribute.AIR_CONDITIONING,
+
         },
     },
     _LIGHT: {
@@ -175,12 +180,29 @@ class HomeAssistantSkill(CommonIoTSkill):
         if thing == Thing.LIGHT:
             return self._can_handle_lights(action, attribute, entity)
 
-        if thing == Thing.THERMOSTAT:
-            return self._can_handle_thermostat(action, attribute, entity)
+        if thing == thing.TEMPERATURE or thing == thing.THERMOSTAT:
+            return self._can_handle_temperature(action, entity)
+
+        if thing == thing.HEAT:
+            return self._can_handle_temperature(action, entity, _LOW)
+
+        if thing == thing.AIR_CONDITIONING:
+            action = self._invert_action(action)
+            return self._can_handle_temperature(action, entity, _HIGH)
 
         # TODO - handle switches
 
         return False, None
+
+    def _invert_action(self, action):
+        # Invert increase/decrease - turn _up_ the AC
+        # means turn _down_ the temperature.
+        if action == Action.INCREASE:
+            action = Action.DECREASE
+        elif action == Action.DECREASE:
+            action = Action.INCREASE
+        return action
+
 
     def _can_handle_lights(self, action: Action, attribute: Attribute, entity_id: str):
         simple_actions = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
@@ -213,28 +235,20 @@ class HomeAssistantSkill(CommonIoTSkill):
 
         return False, None
 
-    def _can_handle_thermostat(self, action: Action, attribute: Attribute, entity_id: str):
-        simple_actions = {Action.ON: "turn_on", Action.OFF: "turn_off"}
-        if action in simple_actions:
-            state = {_DOMAIN: _CLIMATE, _SERVICE: simple_actions[action]}
-            if entity_id:
-                state[_ENTITY_ID] = entity_id
-            return True, [state]
-
+    def _can_handle_temperature(self, action: Action, entity_id: str, target_key=_TEMPERATURE):
         if action in (Action.INCREASE, Action.DECREASE):
             states = self._client.get_states(entity_id)
 
             if not entity_id:
                 states = (s for s in states if s[_ENTITY_ID].startswith(_CLIMATE))
 
-            states = [s for s in states if any([a.startswith('target_temp') for a in s[_ATTRIBUTES]])]
+            states = [s for s in states if target_key in s[_ATTRIBUTES]]
 
             if states:
                 step = _TEMPERATURE_STEP if action == Action.INCREASE \
                     else -1 * _TEMPERATURE_STEP
 
-                states = [_adjust_temperature(s, step) for s in states]
-                LOGGER.info(states)
+                states = [_adjust_values(s, step, target_key) for s in states]
 
                 return True, {_DOMAIN : _CLIMATE,
                               _SERVICE: "set_temperature",
@@ -251,9 +265,19 @@ def _adjust_brightness(current_state, adjustment):
     return value
 
 
-def _adjust_temperature(current_state, adjustment):
-    attributes = current_state[_ATTRIBUTES].items()
-    data = {k: v + adjustment for k, v in attributes if k.startswith('target_temp')}
+def _adjust_values(current_state, adjustment, target_key):
+    attributes = current_state[_ATTRIBUTES]
+
+    if target_key == _TEMPERATURE and not attributes.get(_TEMPERATURE):
+        data = {_HIGH: attributes[_HIGH] + adjustment, _LOW: attributes[_LOW] + adjustment}
+    else:
+        data = {target_key: attributes[target_key] + adjustment}
+
+    if target_key == _HIGH and _LOW in attributes:
+        data[_LOW] = attributes[_LOW]  # homeassitant gives a 400 if we don't provide both
+    if target_key == _LOW and _HIGH in attributes:
+        data[_HIGH] = attributes[_HIGH]
+
     entity_id = current_state[_ENTITY_ID]
     data[_ENTITY_ID] = entity_id
     return data
