@@ -80,6 +80,9 @@ _DOMAINS = {
 }
 
 
+_SIMPLE_ACTIONS = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
+
+
 #TODO Make these settings
 _BRIGHTNESS_STEP = 20
 _TEMPERATURE_STEP = 2
@@ -191,7 +194,7 @@ class HomeAssistantSkill(CommonIoTSkill):
             return self._can_handle_temperature(action, entity, _HIGH)
 
         if thing == thing.SWITCH:
-            return self._can_handle_switch(action, entity)
+            return self._can_handle_simple(action, _SWITCH, entity)
 
         return False, None
 
@@ -204,10 +207,9 @@ class HomeAssistantSkill(CommonIoTSkill):
             action = Action.INCREASE
         return action
 
-    def _can_handle_switch(self, action: Action, entity_id: str):
-        simple_actions = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
-        if action in simple_actions:
-            data = {_DOMAIN: _SWITCH, _SERVICE: simple_actions[action]}
+    def _can_handle_simple(self, action: Action, domain: str, entity_id: str):
+        if action in _SIMPLE_ACTIONS:
+            data = {_DOMAIN: domain, _SERVICE: _SIMPLE_ACTIONS[action]}
             states = [dict()]
             if entity_id:
                 states[0][_ENTITY_ID] = entity_id
@@ -215,14 +217,8 @@ class HomeAssistantSkill(CommonIoTSkill):
             return True, data
 
     def _can_handle_lights(self, action: Action, attribute: Attribute, entity_id: str):
-        simple_actions = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
-        if action in simple_actions:
-            data = {_DOMAIN: _LIGHT, _SERVICE: simple_actions[action]}
-            states = [dict()]
-            if entity_id:
-                states[0][_ENTITY_ID] = entity_id
-            data[_STATES] = states
-            return True, data
+        if action in _SIMPLE_ACTIONS:
+            return self._can_handle_simple(action, _LIGHT, entity_id)
 
         states = self._client.get_states(entity_id)
 
