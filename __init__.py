@@ -41,7 +41,14 @@ _THING_TO_DOMAIN = {
 
 
 _DOMAIN_TO_THING = {v: k for k, v in _THING_TO_DOMAIN.items()}
+del(_DOMAIN_TO_THING[_CLIMATE])  # Climate is ambiguous, so we remove it.
 
+_CLIMATE_THINGS = {
+    Thing.TEMPERATURE,
+    Thing.THERMOSTAT,
+    Thing.HEAT,
+    Thing.AIR_CONDITIONING
+}
 
 _DOMAINS = {
     _AUTOMATION: {
@@ -95,6 +102,7 @@ _DOMAINS = {
             Action.ON,
             Action.OFF,
             Action.TOGGLE,
+            Action.TRIGGER
         },
         _ATTRIBUTES: {
 
@@ -131,6 +139,8 @@ class HomeAssistantSkill(CommonIoTSkill):
     def _build_entities_map(self, entities: dict):
         results = defaultdict(list)
         for id, name in entities.items():
+            if name:
+                name = name.lower()
             if self._domain(id) in _DOMAINS:
                 results[name].append(id)
         return results
@@ -188,14 +198,17 @@ class HomeAssistantSkill(CommonIoTSkill):
             filtered_entities = []
             for id in possible_ids:
                 domain_of_id = self._domain(id)
-                LOGGER.info("id: {}, domain: {}, attribute: {}".format(id, domain_of_id, attribute))
-                LOGGER.info("entities: {}".format(self._entities))
                 if action in _DOMAINS[domain_of_id][_ACTIONS] and \
                         (not attribute or attribute in _DOMAINS[domain_of_id][_ATTRIBUTES]):
-                    filtered_entities.append(id)
+                    if not thing or domain_of_id == _THING_TO_DOMAIN[thing]:
+                        filtered_entities.append(id)
 
-            if len(filtered_entities) != 1:
-                LOGGER.info("filtered_entities: {}".format(filtered_entities))
+            num_matching_entities = len(filtered_entities)
+            if num_matching_entities != 1:
+                if num_matching_entities > 1:
+                    LOGGER.warning("Multiple matching entities! Choosing to "
+                                   " ignore this request. Entities are: "
+                                   " {entities}".format(entities=filtered_entities))
                 return False, None
             entity = filtered_entities[0]
 
@@ -207,7 +220,7 @@ class HomeAssistantSkill(CommonIoTSkill):
             if not thing:
                 thing = _DOMAIN_TO_THING.get(domain)
 
-            if thing != _DOMAIN_TO_THING.get(domain):
+            if not thing == _DOMAIN_TO_THING.get(domain) and not (domain == _CLIMATE and thing in _CLIMATE_THINGS):
                 return False, None
 
         if thing == Thing.LIGHT:
