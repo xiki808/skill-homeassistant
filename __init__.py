@@ -183,6 +183,10 @@ class HomeAssistantSkill(CommonIoTSkill):
         thing = request.thing
         entity = request.entity
         attribute = request.attribute
+        scene = request.scene
+
+        if scene:
+            return False, None
 
         if not thing and not entity:
             return False, None
