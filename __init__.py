@@ -41,7 +41,7 @@ _THING_TO_DOMAIN = {
 
 
 _DOMAIN_TO_THING = {v: k for k, v in _THING_TO_DOMAIN.items()}
-del(_DOMAIN_TO_THING[_CLIMATE])  # Climate is ambiguous, so we remove it.
+del(_DOMAIN_TO_THING[_CLIMATE])  # Climate is ambiguous, so we remove it and use _CLIMATE_THINGS instead.
 
 _CLIMATE_THINGS = {
     Thing.TEMPERATURE,
@@ -190,7 +190,7 @@ class HomeAssistantSkill(CommonIoTSkill):
         if thing and thing not in _THING_TO_DOMAIN:
             return False, None
 
-        if entity:  # TODO refactor this into its own function
+        if entity:  # TODO refactor this into its own function - get entity id from entity
             possible_ids = self._entities.get(entity)
             if not possible_ids:
                 return False, None
