@@ -190,29 +190,11 @@ class HomeAssistantSkill(CommonIoTSkill):
         if thing and thing not in _THING_TO_DOMAIN:
             return False, None
 
-        if entity:  # TODO refactor this into its own function - get entity id from entity
-            possible_ids = self._entities.get(entity)
-            if not possible_ids:
-                return False, None
+        entity_id = self._get_entity_id(entity, action, attribute, thing)
+        if entity and not entity_id:
+            return False, None
 
-            filtered_entities = []
-            for id in possible_ids:
-                domain_of_id = self._domain(id)
-                if action in _DOMAINS[domain_of_id][_ACTIONS] and \
-                        (not attribute or attribute in _DOMAINS[domain_of_id][_ATTRIBUTES]):
-                    if not thing or domain_of_id == _THING_TO_DOMAIN[thing]:
-                        filtered_entities.append(id)
-
-            num_matching_entities = len(filtered_entities)
-            if num_matching_entities != 1:
-                if num_matching_entities > 1:
-                    LOGGER.warning("Multiple matching entities! Choosing to "
-                                   " ignore this request. Entities are: "
-                                   " {entities}".format(entities=filtered_entities))
-                return False, None
-            entity = filtered_entities[0]
-
-        domain = self._domain(entity) if entity else None
+        domain = self._domain(entity_id) if entity_id else None
         if domain:
             if domain not in _DOMAINS:
                 return False, None
@@ -224,32 +206,52 @@ class HomeAssistantSkill(CommonIoTSkill):
                 return False, None
 
         if thing == Thing.LIGHT:
-            return self._can_handle_lights(action, attribute, entity)
+            return self._can_handle_lights(action, attribute, entity_id)
 
         if thing == Thing.TEMPERATURE or thing == Thing.THERMOSTAT:
-            return self._can_handle_temperature(action, entity)
+            return self._can_handle_temperature(action, entity_id)
 
         if thing == Thing.HEAT:
-            return self._can_handle_temperature(action, entity, _LOW)
+            return self._can_handle_temperature(action, entity_id, _LOW)
 
         if thing == Thing.AIR_CONDITIONING:
             action = self._invert_action(action)
-            return self._can_handle_temperature(action, entity, _HIGH)
+            return self._can_handle_temperature(action, entity_id, _HIGH)
 
         if thing == Thing.SWITCH:
-            return self._can_handle_simple(action, _SWITCH, entity)
+            return self._can_handle_simple(action, _SWITCH, entity_id)
 
         if domain == _AUTOMATION:
-            return self._can_handle_automation(action, entity)
+            return self._can_handle_automation(action, entity_id)
 
         if domain == _SCRIPT:
-            # Script after Automation to give bias to Automation
             if action == Action.TRIGGER:
                 action = Action.ON
-            return self._can_handle_simple(action, _SCRIPT, entity)
-
+            return self._can_handle_simple(action, _SCRIPT, entity_id)
 
         return False, None
+
+    def _get_entity_id(self, entity: str, action: Action, attribute: Attribute, thing: Thing):
+        possible_ids = self._entities.get(entity)
+        if not possible_ids:
+            return None
+
+        filtered_entities = []
+        for id in possible_ids:
+            domain_of_id = self._domain(id)
+            if action in _DOMAINS[domain_of_id][_ACTIONS] and \
+                    (not attribute or attribute in _DOMAINS[domain_of_id][_ATTRIBUTES]):
+                if not thing or domain_of_id == _THING_TO_DOMAIN[thing]:
+                    filtered_entities.append(id)
+
+        num_matching_entities = len(filtered_entities)
+        if num_matching_entities != 1:
+            if num_matching_entities > 1:
+                LOGGER.warning("Multiple matching entities! Choosing to "
+                               " ignore this request. Entities are: "
+                               " {entities}".format(entities=filtered_entities))
+            return None
+        return filtered_entities[0]
 
     def _invert_action(self, action):
         # Invert increase/decrease - turn _up_ the AC
