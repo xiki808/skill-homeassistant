@@ -14,6 +14,7 @@ LOGGER = getLogger(__name__)
 # Common Strings
 _ACTIONS = "actions"
 _ATTRIBUTES = "attributes"
+_AUTOMATION = "automation"
 _BRIGHTNESS = "brightness"
 _CLIMATE = "climate"
 _DOMAIN = "domain"
@@ -21,6 +22,7 @@ _ENTITY_ID = "entity_id"
 _HIGH = "target_temp_high"
 _LIGHT = "light"
 _LOW = "target_temp_low"
+_SCRIPT = "script"
 _SERVICE = "service"
 _STATES = "states"
 _SWITCH = "switch"
@@ -42,6 +44,17 @@ _DOMAIN_TO_THING = {v: k for k, v in _THING_TO_DOMAIN.items()}
 
 
 _DOMAINS = {
+    _AUTOMATION: {
+        _ACTIONS: {
+            Action.ON,
+            Action.OFF,
+            Action.TOGGLE,
+            Action.TRIGGER
+        },
+        _ATTRIBUTES: {
+
+        },
+    },
     _CLIMATE: {
         _ACTIONS: {
             Action.ON,
@@ -77,10 +90,24 @@ _DOMAINS = {
 
         },
     },
+    _SCRIPT: {
+        _ACTIONS: {
+            Action.ON,
+            Action.OFF,
+            Action.TOGGLE,
+        },
+        _ATTRIBUTES: {
+
+        },
+    }
 }
 
 
-_SIMPLE_ACTIONS = {Action.TOGGLE: "toggle", Action.ON: "turn_on", Action.OFF: "turn_off"}
+_SIMPLE_ACTIONS = {
+    Action.TOGGLE: "toggle",
+    Action.ON: "turn_on",
+    Action.OFF: "turn_off"
+}
 
 
 #TODO Make these settings
@@ -104,7 +131,7 @@ class HomeAssistantSkill(CommonIoTSkill):
     def _build_entities_map(self, entities: dict):
         results = defaultdict(list)
         for id, name in entities.items():
-            if self._domain(id) in _DOMAIN_TO_THING:
+            if self._domain(id) in _DOMAINS:
                 results[name].append(id)
         return results
 
@@ -154,47 +181,60 @@ class HomeAssistantSkill(CommonIoTSkill):
             return False, None
 
         if entity:  # TODO refactor this into its own function
-            possible_ids = self._entities[entity]
+            possible_ids = self._entities.get(entity)
             if not possible_ids:
                 return False, None
 
             filtered_entities = []
             for id in possible_ids:
                 domain_of_id = self._domain(id)
+                LOGGER.info("id: {}, domain: {}, attribute: {}".format(id, domain_of_id, attribute))
+                LOGGER.info("entities: {}".format(self._entities))
                 if action in _DOMAINS[domain_of_id][_ACTIONS] and \
                         (not attribute or attribute in _DOMAINS[domain_of_id][_ATTRIBUTES]):
-                        filtered_entities.append(id)
+                    filtered_entities.append(id)
 
             if len(filtered_entities) != 1:
+                LOGGER.info("filtered_entities: {}".format(filtered_entities))
                 return False, None
             entity = filtered_entities[0]
 
         domain = self._domain(entity) if entity else None
         if domain:
-            if domain not in _DOMAIN_TO_THING:
+            if domain not in _DOMAINS:
                 return False, None
 
             if not thing:
-                thing = _DOMAIN_TO_THING[domain]
+                thing = _DOMAIN_TO_THING.get(domain)
 
-            if thing != _DOMAIN_TO_THING[domain]:
+            if thing != _DOMAIN_TO_THING.get(domain):
                 return False, None
 
         if thing == Thing.LIGHT:
             return self._can_handle_lights(action, attribute, entity)
 
-        if thing == thing.TEMPERATURE or thing == thing.THERMOSTAT:
+        if thing == Thing.TEMPERATURE or thing == Thing.THERMOSTAT:
             return self._can_handle_temperature(action, entity)
 
-        if thing == thing.HEAT:
+        if thing == Thing.HEAT:
             return self._can_handle_temperature(action, entity, _LOW)
 
-        if thing == thing.AIR_CONDITIONING:
+        if thing == Thing.AIR_CONDITIONING:
             action = self._invert_action(action)
             return self._can_handle_temperature(action, entity, _HIGH)
 
-        if thing == thing.SWITCH:
+        if thing == Thing.SWITCH:
             return self._can_handle_simple(action, _SWITCH, entity)
+
+        if domain == _AUTOMATION:
+            return self._can_handle_automation(action, entity)
+
+        if domain == _SCRIPT:
+            # Script after Automation to give bias to Automation
+            if action == Action.TRIGGER:
+                action = Action.ON
+            return self._can_handle_simple(action, _SCRIPT, entity)
+
 
         return False, None
 
@@ -215,6 +255,25 @@ class HomeAssistantSkill(CommonIoTSkill):
                 states[0][_ENTITY_ID] = entity_id
             data[_STATES] = states
             return True, data
+        return False, None
+
+    def _can_handle_automation(self, action: Action, entity_id: str):
+        if not entity_id:
+            return False, None
+
+        service = None
+        if action == Action.TRIGGER:
+            service = "trigger"
+        elif action in _SIMPLE_ACTIONS:
+            service = _SIMPLE_ACTIONS[action]
+
+        if service:
+            data = {_DOMAIN: _AUTOMATION, _SERVICE: service}
+            states = [{_ENTITY_ID: entity_id}]
+            data[_STATES] = states
+            return True, data
+
+        return False, None
 
     def _can_handle_lights(self, action: Action, attribute: Attribute, entity_id: str):
         if action in _SIMPLE_ACTIONS:
@@ -242,6 +301,7 @@ class HomeAssistantSkill(CommonIoTSkill):
         return False, None
 
     def _can_handle_temperature(self, action: Action, entity_id: str, target_key=_TEMPERATURE):
+        # TODO handle min/max temp values
         if action in (Action.INCREASE, Action.DECREASE):
             states = self._client.get_states(entity_id)
 
@@ -280,7 +340,7 @@ def _adjust_values(current_state, adjustment, target_key):
         data = {target_key: attributes[target_key] + adjustment}
 
     if target_key == _HIGH and _LOW in attributes:
-        data[_LOW] = attributes[_LOW]  # homeassitant gives a 400 if we don't provide both
+        data[_LOW] = attributes[_LOW]  # homeassistant gives a 400 if we don't provide both
     if target_key == _LOW and _HIGH in attributes:
         data[_HIGH] = attributes[_HIGH]
 
