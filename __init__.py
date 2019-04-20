@@ -22,6 +22,7 @@ _ENTITY_ID = "entity_id"
 _HIGH = "target_temp_high"
 _LIGHT = "light"
 _LOW = "target_temp_low"
+_SCENE = "scene"
 _SCRIPT = "script"
 _SERVICE = "service"
 _STATES = "states"
@@ -87,6 +88,14 @@ _DOMAINS = {
         },
 
     },
+    _SCENE: {
+        _ACTIONS: {
+            Action.ON,
+        },
+        _ATTRIBUTES: {
+
+        },
+    },
     _SWITCH: {
         _ACTIONS: {
             Action.ON,
@@ -129,11 +138,13 @@ class HomeAssistantSkill(CommonIoTSkill):
         super().__init__(name="HomeAssistantSkill")
         self._client: HomeAssistantClient = None
         self._entities = dict()
+        self._scenes = dict()
 
     def initialize(self):
         self.settings.set_changed_callback(self.on_websettings_changed)
         self._setup()
         self._entities = self._build_entities_map(self._client.entities())
+        self._scenes = self._build_scenes_map(self._client.entities())
         self.register_entities_and_scenes()
 
     def _build_entities_map(self, entities: dict):
@@ -141,8 +152,19 @@ class HomeAssistantSkill(CommonIoTSkill):
         for id, name in entities.items():
             if name:
                 name = name.lower()
-            if self._domain(id) in _DOMAINS:
+            domain = self._domain(id)
+            if domain in _DOMAINS and domain != _SCENE:
                 results[name].append(id)
+        return results
+
+    def _build_scenes_map(self, entities: dict):
+        results = dict()
+        for id, name in entities.items():
+            if not name:
+                continue
+            name = name.lower()
+            if self._domain(id) == _SCENE:
+                results[name] = id
         return results
 
     def on_websettings_changed(self):
@@ -175,6 +197,9 @@ class HomeAssistantSkill(CommonIoTSkill):
     def get_entities(self):
         return self._entities.keys()
 
+    def get_scenes(self):
+        return self._scenes.keys()
+
     def run_request(self, request: IoTRequest, callback_data: dict):
         self._client.run_services(**callback_data)
 
@@ -186,7 +211,7 @@ class HomeAssistantSkill(CommonIoTSkill):
         scene = request.scene
 
         if scene:
-            return False, None
+            return self._can_handle_scene(scene, action, thing, entity, attribute)
 
         if not thing and not entity:
             return False, None
@@ -275,6 +300,15 @@ class HomeAssistantSkill(CommonIoTSkill):
             data[_STATES] = states
             return True, data
         return False, None
+
+    def _can_handle_scene(self, scene, action, thing, entity, attribute):
+        if thing or entity or attribute:
+            return False, None
+        if action not in _DOMAINS[_SCENE][_ACTIONS]:
+            return False, None
+        if scene not in self._scenes:
+            return False, None
+        return self._can_handle_simple(action, _SCENE, self._scenes[scene])
 
     def _can_handle_automation(self, action: Action, entity_id: str):
         if not entity_id:
