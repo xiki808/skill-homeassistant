@@ -127,6 +127,8 @@ _SIMPLE_ACTIONS = {
 }
 
 
+_MAX_BRIGHTNESS = 254
+
 #TODO Make these settings
 _BRIGHTNESS_STEP = 20
 _TEMPERATURE_STEP = 2
@@ -239,8 +241,11 @@ class HomeAssistantSkill(CommonIoTSkill):
             if not thing == _DOMAIN_TO_THING.get(domain) and not (domain == _CLIMATE and thing in _CLIMATE_THINGS):
                 return False, None
 
+        if value and thing not in {Thing.LIGHT} | _CLIMATE_THINGS:  # Only lights and heat/ac can handle a value
+            return False, None
+
         if thing == Thing.LIGHT:
-            return self._can_handle_lights(action, attribute, entity_id)
+            return self._can_handle_lights(action, attribute, entity_id, value=value)
 
         if thing == Thing.TEMPERATURE or thing == Thing.THERMOSTAT:
             return self._can_handle_temperature(action, entity_id, value=value)
@@ -333,7 +338,7 @@ class HomeAssistantSkill(CommonIoTSkill):
 
         return False, None
 
-    def _can_handle_lights(self, action: Action, attribute: Attribute, entity_id: str):
+    def _can_handle_lights(self, action: Action, attribute: Attribute, entity_id: str, value=None):
         if action in _SIMPLE_ACTIONS:
             return self._can_handle_simple(action, _LIGHT, entity_id)
 
@@ -342,19 +347,28 @@ class HomeAssistantSkill(CommonIoTSkill):
         if not entity_id:
             states = (s for s in states if s[_ENTITY_ID].startswith(_LIGHT))
 
-        if action in {Action.INCREASE, Action.DECREASE} and attribute in {Attribute.BRIGHTNESS, None}:
+        if (action in {Action.INCREASE, Action.DECREASE}
+                or (action == Action.SET and value)
+                and attribute in {Attribute.BRIGHTNESS, None}):
             states = [s for s in states if _BRIGHTNESS in s[_ATTRIBUTES]]
 
-            if states:
+            if not states:
+                return False, None
+
+            if action == Action.SET:
+                states = [{_ENTITY_ID: s[_ENTITY_ID],
+                           _BRIGHTNESS: _get_value_from_percent(value, _MAX_BRIGHTNESS)}
+                          for s in states]
+            else:
                 step = _BRIGHTNESS_STEP if action == Action.INCREASE \
                     else -1 * _BRIGHTNESS_STEP
                 states = [{_ENTITY_ID: s[_ENTITY_ID],
                            _BRIGHTNESS: _adjust_brightness(s, step)}
                           for s in states]
 
-                return True, {_DOMAIN : _LIGHT,
-                              _SERVICE: "turn_on",
-                              _STATES: states}
+            return True, {_DOMAIN : _LIGHT,
+                          _SERVICE: "turn_on",
+                          _STATES: states}
 
         return False, None
 
@@ -374,6 +388,8 @@ class HomeAssistantSkill(CommonIoTSkill):
             return False, None
 
         if action == Action.SET:
+            if not value:
+                return False, None
             states = [_set_temperature(s, value, target_key) for s in states]
         else:
             step = _TEMPERATURE_STEP if action == Action.INCREASE \
@@ -381,7 +397,6 @@ class HomeAssistantSkill(CommonIoTSkill):
 
             states = [_adjust_temperature(s, step, target_key) for s in states]
 
-        LOGGER.info("States: ", states)
         return True, {_DOMAIN : _CLIMATE,
                       _SERVICE: "set_temperature",
                       _STATES: states}
@@ -389,11 +404,16 @@ class HomeAssistantSkill(CommonIoTSkill):
 
 def _adjust_brightness(current_state, adjustment):
     value = current_state[_ATTRIBUTES][_BRIGHTNESS] + adjustment
-    if value > 254:
-        value = 254
+    if value > _MAX_BRIGHTNESS:
+        value = _MAX_BRIGHTNESS
     if value < 0:
         value = 0
     return value
+
+
+def _get_value_from_percent(percentage, max_value):
+    value = percentage / 100 * max_value
+    return value if value < max_value else max_value
 
 
 def _adjust_temperature(current_state, adjustment, target_key):
