@@ -1,6 +1,11 @@
 import json
 import requests
 
+from mycroft.util.log import getLogger
+
+
+LOGGER = getLogger(__name__)
+
 
 class HomeAssistantApi():
 
@@ -59,7 +64,7 @@ class HomeAssistantApi():
     def run_service(self, domain: str, service: str, data: dict):
         endpoint = "services/{domain}/{service}".format(
             domain=domain, service=service)
-        print(endpoint, data)
+        LOGGER.info("Running {service} with {data}".format(service=endpoint, data=data))
         return self._post(endpoint, data)
 
 
