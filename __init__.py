@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from mycroft.skills.common_iot_skill import CommonIoTSkill,\
-    IoTRequest, Thing, Action, Attribute
+    IoTRequest, IoTRequestVersion, Thing, Action, Attribute
 from mycroft.util.log import getLogger
 
 
@@ -194,6 +194,10 @@ class HomeAssistantSkill(CommonIoTSkill):
     def stop(self):
         pass
 
+    @property
+    def supported_request_version(self) -> IoTRequestVersion:
+        return IoTRequestVersion.V2
+
     def get_entities(self):
         return self._entities.keys()
 
@@ -209,6 +213,7 @@ class HomeAssistantSkill(CommonIoTSkill):
         entity = request.entity
         attribute = request.attribute
         scene = request.scene
+        value = request.value
 
         if scene:
             return self._can_handle_scene(scene, action, thing, entity, attribute)
@@ -238,14 +243,14 @@ class HomeAssistantSkill(CommonIoTSkill):
             return self._can_handle_lights(action, attribute, entity_id)
 
         if thing == Thing.TEMPERATURE or thing == Thing.THERMOSTAT:
-            return self._can_handle_temperature(action, entity_id)
+            return self._can_handle_temperature(action, entity_id, value=value)
 
         if thing == Thing.HEAT:
-            return self._can_handle_temperature(action, entity_id, _LOW)
+            return self._can_handle_temperature(action, entity_id, _LOW, value=value)
 
         if thing == Thing.AIR_CONDITIONING:
             action = self._invert_action(action)
-            return self._can_handle_temperature(action, entity_id, _HIGH)
+            return self._can_handle_temperature(action, entity_id, _HIGH, value=value)
 
         if thing == Thing.SWITCH:
             return self._can_handle_simple(action, _SWITCH, entity_id)
@@ -353,26 +358,33 @@ class HomeAssistantSkill(CommonIoTSkill):
 
         return False, None
 
-    def _can_handle_temperature(self, action: Action, entity_id: str, target_key=_TEMPERATURE):
+    def _can_handle_temperature(self, action: Action, entity_id: str, target_key=_TEMPERATURE, value=None):
         # TODO handle min/max temp values
-        if action in (Action.INCREASE, Action.DECREASE):
-            states = self._client.get_states(entity_id)
+        if action not in (Action.INCREASE, Action.DECREASE) and not (action == Action.SET and value):
+            return False, None
 
-            if not entity_id:
-                states = (s for s in states if s[_ENTITY_ID].startswith(_CLIMATE))
+        states = self._client.get_states(entity_id)
 
-            states = [s for s in states if target_key in s[_ATTRIBUTES]]
+        if not entity_id:
+            states = (s for s in states if s[_ENTITY_ID].startswith(_CLIMATE))
 
-            if states:
-                step = _TEMPERATURE_STEP if action == Action.INCREASE \
-                    else -1 * _TEMPERATURE_STEP
+        states = [s for s in states if target_key in s[_ATTRIBUTES]]
 
-                states = [_adjust_values(s, step, target_key) for s in states]
+        if not states:
+            return False, None
 
-                return True, {_DOMAIN : _CLIMATE,
-                              _SERVICE: "set_temperature",
-                              _STATES: states}
-        return False, None
+        if action == Action.SET:
+            states = [_set_temperature(s, value, target_key) for s in states]
+        else:
+            step = _TEMPERATURE_STEP if action == Action.INCREASE \
+                else -1 * _TEMPERATURE_STEP
+
+            states = [_adjust_temperature(s, step, target_key) for s in states]
+
+        LOGGER.info("States: ", states)
+        return True, {_DOMAIN : _CLIMATE,
+                      _SERVICE: "set_temperature",
+                      _STATES: states}
 
 
 def _adjust_brightness(current_state, adjustment):
@@ -384,13 +396,30 @@ def _adjust_brightness(current_state, adjustment):
     return value
 
 
-def _adjust_values(current_state, adjustment, target_key):
+def _adjust_temperature(current_state, adjustment, target_key):
     attributes = current_state[_ATTRIBUTES]
 
     if target_key == _TEMPERATURE and not attributes.get(_TEMPERATURE):
         data = {_HIGH: attributes[_HIGH] + adjustment, _LOW: attributes[_LOW] + adjustment}
     else:
         data = {target_key: attributes[target_key] + adjustment}
+
+    if target_key == _HIGH and _LOW in attributes:
+        data[_LOW] = attributes[_LOW]  # homeassistant gives a 400 if we don't provide both
+    if target_key == _LOW and _HIGH in attributes:
+        data[_HIGH] = attributes[_HIGH]
+
+    entity_id = current_state[_ENTITY_ID]
+    data[_ENTITY_ID] = entity_id
+    return data
+
+def _set_temperature(current_state, value, target_key):
+    attributes = current_state[_ATTRIBUTES]
+
+    if target_key == _TEMPERATURE and not attributes.get(_TEMPERATURE):
+        data = {_HIGH:  value + _TEMPERATURE_STEP, _LOW: value - _TEMPERATURE_STEP}
+    else:
+        data = {target_key: value}
 
     if target_key == _HIGH and _LOW in attributes:
         data[_LOW] = attributes[_LOW]  # homeassistant gives a 400 if we don't provide both
