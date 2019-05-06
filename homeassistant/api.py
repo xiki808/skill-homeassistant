@@ -67,6 +67,7 @@ class HomeAssistantApi():
         LOGGER.info("Running {service} with {data}".format(service=endpoint, data=data))
         return self._post(endpoint, data)
 
-
-
+    def converse(self, text: str):
+        endpoint = "conversation/process"
+        return self._post(endpoint, {"text": text})
 

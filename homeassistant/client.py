@@ -60,3 +60,6 @@ class HomeAssistantClient():
     def run_service(self, domain: str, service: str, data: dict):
         self._api.run_service(domain, service, data)
 
+    def converse(self, text):
+        return self._api.converse(text).json()['speech']['plain']['speech']
+
