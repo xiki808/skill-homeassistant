@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from mycroft.skills.common_iot_skill import CommonIoTSkill,\
     IoTRequest, IoTRequestVersion, Thing, Action, Attribute
+from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 
 
@@ -129,12 +130,8 @@ _SIMPLE_ACTIONS = {
 
 _MAX_BRIGHTNESS = 254
 
-#TODO Make these settings
-_BRIGHTNESS_STEP = 20
-_TEMPERATURE_STEP = 2
 
-
-class HomeAssistantSkill(CommonIoTSkill):
+class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
 
     def __init__(self):
         super().__init__(name="HomeAssistantSkill")
@@ -147,7 +144,13 @@ class HomeAssistantSkill(CommonIoTSkill):
         self._setup()
         self._entities = self._build_entities_map(self._client.entities())
         self._scenes = self._build_scenes_map(self._client.entities())
+        self._brightness_step = self.settings.get("brightness_step", 20)
+        self._temperature_step = self.settings.get("temperature_step", 20)
         self.register_entities_and_scenes()
+
+        # Needs higher priority than general fallback skills
+        if self.settings.get('enable_fallback'):
+            self.register_fallback(self.handle_fallback, 2)
 
     def _build_entities_map(self, entities: dict):
         results = defaultdict(list)
@@ -360,8 +363,8 @@ class HomeAssistantSkill(CommonIoTSkill):
                            _BRIGHTNESS: _get_value_from_percent(value, _MAX_BRIGHTNESS)}
                           for s in states]
             else:
-                step = _BRIGHTNESS_STEP if action == Action.INCREASE \
-                    else -1 * _BRIGHTNESS_STEP
+                step = self._brightness_step if action == Action.INCREASE \
+                    else -1 * self._brightness_step
                 states = [{_ENTITY_ID: s[_ENTITY_ID],
                            _BRIGHTNESS: _adjust_brightness(s, step)}
                           for s in states]
@@ -390,16 +393,50 @@ class HomeAssistantSkill(CommonIoTSkill):
         if action == Action.SET:
             if not value:
                 return False, None
-            states = [_set_temperature(s, value, target_key) for s in states]
+            states = [self._set_temperature(s, value, target_key) for s in states]
         else:
-            step = _TEMPERATURE_STEP if action == Action.INCREASE \
-                else -1 * _TEMPERATURE_STEP
+            step = self._temperature_step if action == Action.INCREASE \
+                else -1 * self._temperature_step
 
             states = [_adjust_temperature(s, step, target_key) for s in states]
 
         return True, {_DOMAIN : _CLIMATE,
                       _SERVICE: "set_temperature",
                       _STATES: states}
+
+    def _set_temperature(self, current_state, value, target_key):
+        attributes = current_state[_ATTRIBUTES]
+
+        if target_key == _TEMPERATURE and not attributes.get(_TEMPERATURE):
+            data = {_HIGH:  value + self._temperature_step, _LOW: value - self._temperature_step}
+        else:
+            data = {target_key: value}
+
+        if target_key == _HIGH and _LOW in attributes:
+            data[_LOW] = attributes[_LOW]  # homeassistant gives a 400 if we don't provide both
+        if target_key == _LOW and _HIGH in attributes:
+            data[_HIGH] = attributes[_HIGH]
+
+        entity_id = current_state[_ENTITY_ID]
+        data[_ENTITY_ID] = entity_id
+        return data
+
+    def handle_fallback(self, message):
+        utterance = message.data.get('utterance')
+        answer = self._client.converse(utterance)
+        if answer == "Sorry, I didn't understand that" or answer.endswith("?"):
+            LOGGER.info("Can't handle '{utterance}'".format(utterance=utterance))
+            return False
+        self.speak(answer)
+        LOGGER.info("Can handle '{utterance}'".format(utterance=utterance))
+        return True
+
+    def shutdown(self):
+        self.remove_fallback(self.handle_fallback)
+        super(HomeAssistantSkill, self).shutdown()
+
+
+
 
 
 def _adjust_brightness(current_state, adjustment):
@@ -433,22 +470,6 @@ def _adjust_temperature(current_state, adjustment, target_key):
     data[_ENTITY_ID] = entity_id
     return data
 
-def _set_temperature(current_state, value, target_key):
-    attributes = current_state[_ATTRIBUTES]
-
-    if target_key == _TEMPERATURE and not attributes.get(_TEMPERATURE):
-        data = {_HIGH:  value + _TEMPERATURE_STEP, _LOW: value - _TEMPERATURE_STEP}
-    else:
-        data = {target_key: value}
-
-    if target_key == _HIGH and _LOW in attributes:
-        data[_LOW] = attributes[_LOW]  # homeassistant gives a 400 if we don't provide both
-    if target_key == _LOW and _HIGH in attributes:
-        data[_HIGH] = attributes[_HIGH]
-
-    entity_id = current_state[_ENTITY_ID]
-    data[_ENTITY_ID] = entity_id
-    return data
 
 def create_skill():
     return HomeAssistantSkill()
