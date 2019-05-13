@@ -1,0 +1,65 @@
+identifier: HomeAssistantSkill
+name: HomeAssistant
+skillMetadata:
+  sections:
+    - name: Login
+      fields:
+        - label: Host adress
+          name: host
+          type: text
+          value: ''
+
+        - label: Long-Lived Access Tokens
+          name: token
+          type: password
+          value: ''
+
+        - label: Port number
+          name: portnum
+          type: Number
+          value: 8123
+
+    - name: Options
+      fields:
+        - label: Use SSL
+          name: ssl
+          type: checkbox
+          value: false
+
+        - label: Verify SSL Certificate
+          name: verify
+          type: checkbox
+          value: true
+
+        - label: Enable conversation component as fallback
+          name: enable_fallback
+          type: checkbox
+          value: true
+
+        - name: brightness_step_label
+          type: label
+          label: >
+            <p>
+            Lights support brightness values from 1-254. The Brightness Step
+            determines how much Mycroft should turn the lights up or down when
+            you ask him to adjust the brightness of your lights.
+            </p>
+
+        - label: Brightness Step
+          name: brightness_step
+          type: Number
+          value: 20
+
+        - name: temperature_step_label
+          type: label
+          label: >
+            <p>
+            The temperature step value controls how many degrees Mycroft will
+            adjust your Heat and/or AC when you request that he turn them up or
+            down.
+            </p>
+
+        - label: Temperature Step2
+          name: temperature_step
+          type: Number
+          value: 2
