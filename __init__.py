@@ -142,15 +142,19 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
     def initialize(self):
         self.settings.set_changed_callback(self.on_websettings_changed)
         self._setup()
+        LOGGER.info("Client setup")
         self._entities = self._build_entities_map(self._client.entities())
+        LOGGER.info("Entities: {entities}".format(entities=self._entities))
         self._scenes = self._build_scenes_map(self._client.entities())
+        LOGGER.info("scenes: {scenes}".format(scenes=self._scenes))
         self._brightness_step = self.settings.get("brightness_step", 20)
         self._temperature_step = self.settings.get("temperature_step", 20)
         self.register_entities_and_scenes()
+        LOGGER.info("Entities and scenes successfully registered.")
 
         # Needs higher priority than general fallback skills
-        if self.settings.get('enable_fallback'):
-            self.register_fallback(self.handle_fallback, 2)
+        # if self.settings.get('enable_fallback'):
+        #     self.register_fallback(self.handle_fallback, 2)
 
     def _build_entities_map(self, entities: dict):
         results = defaultdict(list)
@@ -179,6 +183,19 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
 
     def _setup(self):
         portnumber = int(self.settings.get('portnum', 8123))
+        LOGGER.info("""Setting up HA client with settings:
+        port: {port},
+        host: {hostname},
+        token (truncated): {token},
+        ssl: {ssl},
+        verify: {verify}
+        """.format(
+                token=self.settings.get('token')[0:10] + "...",
+                hostname=self.settings.get('hostname', 'localhost'),
+                port=portnumber,
+                ssl=self.settings.get('ssl', False),
+                verify=self.settings.get('verify', True)
+        ))
         self._client = HomeAssistantClient(
             token=self.settings.get('token'),
             hostname=self.settings.get('hostname', 'localhost'),
