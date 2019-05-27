@@ -16,7 +16,7 @@ skillMetadata:
 
         - label: Port number
           name: portnum
-          type: Number
+          type: number
           value: 8123
 
     - name: Options
@@ -47,7 +47,7 @@ skillMetadata:
 
         - label: Brightness Step
           name: brightness_step
-          type: Number
+          type: number
           value: 20
 
         - name: temperature_step_label
@@ -59,7 +59,7 @@ skillMetadata:
             down.
             </p>
 
-        - label: Temperature Step2
+        - label: Temperature Step
           name: temperature_step
-          type: Number
+          type: number
           value: 2
