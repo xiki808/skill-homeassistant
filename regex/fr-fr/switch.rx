@@ -1,0 +1,3 @@
+
+
+((Tourner|Mettre) )?(?P<Entity>.*) (?P<Action>sur Marche|sur Arrêt)
