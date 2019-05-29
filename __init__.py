@@ -181,7 +181,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         portnumber = int(self.settings.get('portnum', 8123))
         self._client = HomeAssistantClient(
             token=self.settings.get('token'),
-            hostname=self.settings.get('hostname', 'localhost'),
+            hostname=self.settings.get('host', 'localhost'),
             port=portnumber,
             ssl=self.settings.get('ssl', False),
             verify=self.settings.get('verify', True)
