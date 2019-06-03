@@ -225,18 +225,19 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         status = device_state['state']
         queried_state = State[callback_data['state']]
 
-        if queried_state == State.POWERED:
-            if status == 'on':
-                self.speak("Yes, {friendly_name} is on.".format(friendly_name=friendly_name))
-            else:
-                self.speak("No, {friendly_name} is off.".format(friendly_name=friendly_name))
-        elif queried_state == State.UNPOWERED:
-            if status == 'on':
-                self.speak("No, {friendly_name} is on.".format(friendly_name=friendly_name))
-            else:
-                self.speak("Yes, {friendly_name} is off.".format(friendly_name=friendly_name))
+        if ((queried_state == State.POWERED and status == "on")
+                or (queried_state == State.UNPOWERED and status == "off")):
+            self.speak_dialog('affirmative.state',{'friendly_name': friendly_name, 'state': status})
+
+        elif ((queried_state == State.POWERED and status == "off")
+                or (queried_state == State.UNPOWERED and status == "on")):
+            self.speak_dialog('negative.state', {'friendly_name': friendly_name, 'state': status})
+
         else:
-            raise Exception("Unsupported state query!")
+            raise Exception("Unsupported state query! Queried state was"
+                            " {queried_state}. Device state was {device_state}"
+                            .format(queried_state=queried_state,
+                                    device_state=device_state))
 
 
     def can_handle(self, request: IoTRequest):
