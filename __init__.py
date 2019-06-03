@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from mycroft.skills.common_iot_skill import CommonIoTSkill,\
-    IoTRequest, IoTRequestVersion, Thing, Action, Attribute
+    IoTRequest, IoTRequestVersion, Thing, Action, Attribute, State
 from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 
@@ -102,6 +102,7 @@ _DOMAINS = {
             Action.ON,
             Action.OFF,
             Action.TOGGLE,
+            Action.BINARY_QUERY
         },
         _ATTRIBUTES: {
 
@@ -201,7 +202,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
 
     @property
     def supported_request_version(self) -> IoTRequestVersion:
-        return IoTRequestVersion.V2
+        return IoTRequestVersion.V3
 
     def get_entities(self):
         return self._entities.keys()
@@ -210,7 +211,33 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         return self._scenes.keys()
 
     def run_request(self, request: IoTRequest, callback_data: dict):
-        self._client.run_services(**callback_data)
+        if request.action in [Action.BINARY_QUERY]:
+            self._run_binary_state_query(request, callback_data)
+        else:
+            self._client.run_services(**callback_data)
+
+    def _run_binary_state_query(self, request: IoTRequest, callback_data: dict):
+        """
+        Currently supports POWERED/UNPOWERED queries
+        """
+        device_state = self._client.get_states(callback_data['entity_id'])[0]
+        friendly_name = device_state['attributes']['friendly_name']
+        status = device_state['state']
+        queried_state = State[callback_data['state']]
+
+        if queried_state == State.POWERED:
+            if status == 'on':
+                self.speak("Yes, {friendly_name} is on.".format(friendly_name=friendly_name))
+            else:
+                self.speak("No, {friendly_name} is off.".format(friendly_name=friendly_name))
+        elif queried_state == State.UNPOWERED:
+            if status == 'on':
+                self.speak("No, {friendly_name} is on.".format(friendly_name=friendly_name))
+            else:
+                self.speak("Yes, {friendly_name} is off.".format(friendly_name=friendly_name))
+        else:
+            raise Exception("Unsupported state query!")
+
 
     def can_handle(self, request: IoTRequest):
         action = request.action
@@ -219,6 +246,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         attribute = request.attribute
         scene = request.scene
         value = request.value
+        state = request.state
 
         if scene:
             return self._can_handle_scene(scene, action, thing, entity, attribute)
@@ -231,6 +259,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
 
         entity_id = self._get_entity_id(entity, action, attribute, thing)
         if entity and not entity_id:
+            LOGGER.info("asdfasdf")
             return False, None
 
         domain = self._domain(entity_id) if entity_id else None
@@ -261,7 +290,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
             return self._can_handle_temperature(action, entity_id, _HIGH, value=value)
 
         if thing == Thing.SWITCH:
-            return self._can_handle_simple(action, _SWITCH, entity_id)
+            return self._can_handle_switch(action, entity_id, state)
 
         if domain == _AUTOMATION:
             return self._can_handle_automation(action, entity_id)
@@ -313,6 +342,12 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
             data[_STATES] = states
             return True, data
         return False, None
+
+    def _can_handle_switch(self, action, entity_id, state):
+        if action in _SIMPLE_ACTIONS:
+            return self._can_handle_simple(action, _SWITCH, entity_id)
+        if action in [Action.BINARY_QUERY] and state in [State.POWERED, State.UNPOWERED]:
+            return True, {'entity_id': entity_id, 'state': state.name}
 
     def _can_handle_scene(self, scene, action, thing, entity, attribute):
         if thing or entity or attribute:
@@ -372,6 +407,10 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
             return True, {_DOMAIN : _LIGHT,
                           _SERVICE: "turn_on",
                           _STATES: states}
+
+        if action == Action.BINARY_QUERY:
+            return True, None
+
 
         return False, None
 
@@ -434,9 +473,6 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
     def shutdown(self):
         self.remove_fallback(self.handle_fallback)
         super(HomeAssistantSkill, self).shutdown()
-
-
-
 
 
 def _adjust_brightness(current_state, adjustment):

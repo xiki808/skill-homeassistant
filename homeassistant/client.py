@@ -50,7 +50,7 @@ class HomeAssistantClient():
         if entity_id:
             states = [states]
 
-        return  states
+        return states
 
     def run_services(self, domain: str, service: str, states: List[Dict]):
         # TODO Make this async
