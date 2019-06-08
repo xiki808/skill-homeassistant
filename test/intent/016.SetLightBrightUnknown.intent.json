@@ -1,4 +1,0 @@
-{
-  "utterance": "set brightness of tank light to 40 percent",
-  "expected_dialog": "homeassistant.device.unknown"
-}

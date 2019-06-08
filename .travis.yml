@@ -8,5 +8,3 @@ python:
 script:
  - pep8 __init__.py
  - pytest --rootdir=unittests --cov unittests/
-after_success:
-  codecov --token=4984c911-ce8f-4767-a446-7339a16ad840

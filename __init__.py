@@ -435,7 +435,6 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         if action == Action.BINARY_QUERY:
             return True, None
 
-
         return False, None
 
     def _can_handle_temperature(self, action: Action, entity_id: str, attribute: Attribute, target_key=_TEMPERATURE, value=None):
