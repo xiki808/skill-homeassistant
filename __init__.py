@@ -276,7 +276,8 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         if not thing and not entity:
             return False, None
 
-        if thing and thing not in _THING_TO_DOMAIN:
+        if thing and thing not in _THING_TO_DOMAIN \
+                or _THING_TO_DOMAIN[thing] not in self._client.domains():
             return False, None
 
         entity_id = self._get_entity_id(entity, action, attribute, thing)
@@ -285,7 +286,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
 
         domain = self._domain(entity_id) if entity_id else None
         if domain:
-            if domain not in _DOMAINS:
+            if domain not in _DOMAINS or domain not in self._client.domains():
                 return False, None
 
             if not thing:
@@ -372,6 +373,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
             return self._can_handle_simple(action, _SWITCH, entity_id)
         if action in [Action.BINARY_QUERY] and state in [State.POWERED, State.UNPOWERED]:
             return True, {'entity_id': entity_id, 'state': state.name}
+        return False, None
 
     def _can_handle_scene(self, scene, action, thing, entity, attribute):
         if thing or entity or attribute:
