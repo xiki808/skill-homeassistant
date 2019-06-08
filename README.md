@@ -1,20 +1,20 @@
-[![Stories in Ready](https://badge.waffle.io/btotharye/mycroft-homeassistant.svg?label=ready&title=Ready)](http://waffle.io/btotharye/mycroft-homeassistant) 
-[![Build Status](https://travis-ci.org/btotharye/mycroft-homeassistant.svg?branch=master)](https://travis-ci.org/btotharye/mycroft-homeassistant)
-[![Coverage Status](https://coveralls.io/repos/github/btotharye/mycroft-homeassistant/badge.svg?branch=master)](https://coveralls.io/github/btotharye/mycroft-homeassistant?branch=master)
-[![Discord](https://img.shields.io/discord/348442860510642176.svg)](https://discord.gg/Xnn89dB)
-
 # <img src='https://raw.githack.com/FortAwesome/Font-Awesome/master/svgs/solid/home.svg' card_color='#000000' width='50' height='50' style='vertical-align:bottom'/> Home Assistant
 Control Home Assistant devices
 
 ## About 
-[Home Assistant](https://www.home-assistant.io/) lets you control all your smart devices in a single easy to use interface. This skill uses the open source Home Assistant's APIs to control devices and entities. Control your lights, garage door, thermostats and more using your voice!
+[Home Assistant](https://www.home-assistant.io/) lets you control all your smart devices in a single easy to use interface. This skill uses the open source Home Assistant's APIs to control devices and entities.
 
-Currently the following entity types are supported: `light`, `switch`, `scene`, `climate`, `groups` and `input_boolean`
+This skill leverages the CommonIoT framework, and depends on the [IoT Control Skill](https://github.com/MycroftAI/skill-iot-control)
 
 ## Examples 
-* "Turn on the office light"
-* "Turn off bedroom lights"
-* "Turn on on the AC"
+* "Turn on the office light."
+* "Set the heat to 72."
+* "Where is my phone?"
+* "Turn off the bedside outlet."
+* "What is the living room temperature?"
+* "Run SCRIPT."
+* "Execute AUTOMATION."
+* "Activate SCENE"
 
 ## Credits 
 @BongoEADGC6
@@ -30,56 +30,9 @@ Mycroft AI (@mycroftai)
 #homeassistant
 #smarthome
 
-
-
-## Configuration
-This skill utilizes the skillsettings.json file which allows you to configure this skill via home.mycroft.ai after a few minutes of having the skill installed you should see something like below in the https://home.mycroft.ai/#/skill location:
-
-Fill this out with your appropriate home assistant information and hit save.
-
-You create the Long-Lived Access Token on the user profile page
-
-![Screenshot](screenshot.JPG?raw=true)
-
 ###  Enabling using the conversation component as Fallback
 
 Home-Assistant [supports basic speech based communication](https://www.home-assistant.io/components/conversation/).
 When enabling the setting `Enable conversation component as fallback` on home.mycroft.ai, sentences that were not parsed
 by any skill before (based on matching keywords) will be passed to this conversation component at the local Home-Assistant server.
 Like this, Mycroft will answer default and custom sentences specified in Home-Assistant.
-
-## Usage
-
-Say something like "Hey Mycroft, turn on living room lights". Currently available commands
-are "turn on" and "turn off". Matching to Home Assistant entity names is done by scanning
-the HA API and looking for the closest matching friendly name. The matching is fuzzy (thanks
-to the `fuzzywuzzy` module) so it should find the right entity most of the time, even if Mycroft
-didn't quite get what you said.  I have further expanded this to also look at groups as well as lights.  This way if you say turn on the office light, it will do the group and not just 1 light, this can easily be modified to your preference by just removing group's from the fuzzy logic in the code.
-
-
-Example Code:
-So in the code in this section you can just remove group, etc to your liking for the lighting.  I will eventually set this up as variables you set in your config file soon.
-
-```
-def handle_lighting_intent(self, message):
-        entity = message.data["Entity"]
-        action = message.data["Action"]
-        LOGGER.debug("Entity: %s" % entity)
-        LOGGER.debug("Action: %s" % action)
-        ha_entity = self.ha.find_entity(entity, ['group','light', 'switch', 'scene', 'input_boolean'])
-        if ha_entity is None:
-            #self.speak("Sorry, I can't find the Home Assistant entity %s" % entity)
-            self.speak_dialog('homeassistant.device.unknown', data={"dev_name": ha_entity['dev_name']})
-            return
-        ha_data = {'entity_id': ha_entity['id']}
-```
-
-## TODO
- * Script intents processing
- * New intent for opening/closing cover entities
- * New intent for locking/unlocking lock entities (with added security?)
- * New intent for thermostat values, raising, etc.
- * New intent to handle multimedia/kodi
-
-## In Development
-* Increasing and Decreasing Climate controls
