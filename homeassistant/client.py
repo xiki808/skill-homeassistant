@@ -36,13 +36,17 @@ class HomeAssistantClient():
 
     @cache
     def services(self):
-        return self._api.get_services()
+        return self._api.get_services().json()
 
     @cache
     def entities(self):
         states = self._api.get_states().json()
         return {state['entity_id']: state['attributes'].get('friendly_name')
                 for state in states}
+
+    @cache
+    def domains(self):
+        return {service['domain'] for service in self.services()}
 
     def get_states(self, entity_id = None):
         states = self._api.get_states(entity_id).json()

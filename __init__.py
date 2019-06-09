@@ -247,7 +247,10 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         status = device_state['state']
         queried_state = State[callback_data['state']]
 
-        if ((queried_state == State.POWERED and status == "on")
+        if status == "unavailable":
+            self.speak_dialog("entity.unavailable", {"name": friendly_name})
+
+        elif ((queried_state == State.POWERED and status == "on")
                 or (queried_state == State.UNPOWERED and status == "off")):
             self.speak_dialog('affirmative.state',{'friendly_name': friendly_name, 'state': status})
 
@@ -276,8 +279,8 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         if not thing and not entity:
             return False, None
 
-        if thing and thing not in _THING_TO_DOMAIN \
-                or _THING_TO_DOMAIN[thing] not in self._client.domains():
+        if thing and (thing not in _THING_TO_DOMAIN
+                or _THING_TO_DOMAIN[thing] not in self._client.domains()):
             return False, None
 
         entity_id = self._get_entity_id(entity, action, attribute, thing)
