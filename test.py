@@ -18,7 +18,7 @@ class TestHomeAssistantSkill(TestCase):
     """
 
     def setUp(self) -> None:
-        MycroftSkill.__init__ = lambda *args, **kwargs: None
+        MycroftSkill.__init__ = MagicMock()
         self.ha_skill = HomeAssistantSkill()
         self.ha_skill._client = MagicMock()
         self.ha_skill._client.domains = MagicMock(return_value={"light", "switch"})
