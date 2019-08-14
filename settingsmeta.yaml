@@ -1,0 +1,31 @@
+name: Home Assistant
+skillMetadata:
+  sections:
+  - name: Login
+    fields:
+    - name: host
+      type: text
+      label: Host address or IP address
+      value: ''
+    - name: token
+      type: password
+      label: Long-Lived Access Tokens
+      value: ''
+    - name: portnum
+      type: number
+      label: Port number
+      value: 8123
+  - name: Options
+    fields:
+    - name: ssl
+      type: checkbox
+      label: Use SSL
+      value: False
+    - name: verify
+      type: checkbox
+      label: Verify SSL Certificate
+      value: True
+    - name: enable_fallback
+      type: checkbox
+      label: Enable conversation component as fallback
+      value: True
