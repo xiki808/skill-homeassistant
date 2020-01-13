@@ -1,2 +1,2 @@
-(met) (?:l'intensité de)?(?P<Entity>.*) (à) (?P<BrightnessValue>\d*)(?: pourcent)?
-(tamise|illumine|augmente|diminue) (?:l'intensité de )?(?P<Entity>.*?) (?:de)? (?P<BrightnessValue>\d*)?(?: pourcent)?
+(mets|règles) (?:(l'intensité de|la lumière))?(?P<Entity>.*) (à) (?P<BrightnessValue>\d*)(?: pourcent)?
+(tamise|illumine|augmente|monte|diminue|descend) (?:(l'intensité de|la lumière))?(?P<Entity>.*?) (?:de)? (?P<BrightnessValue>\d*)?(?: pourcent)?

@@ -1,1 +1,1 @@
-(allume|active) (?P<Entity>.*)
+(allume|active|lance|appelle) (?P<Entity>.*)
