@@ -1,0 +1,3 @@
+((tänd|slå på) )?(?P<Action>till|från|växla) (?P<Entity>.*)
+((slå|switcha) )?(?P<Action>till|från|växla) (?P<Entity>alla|varje|någon) (?P<Domain>strömbrytar(e)?|lamp(a|or)?|(boolesk )?input(s)?)
+((tänd|slå på) )?(?P<Entity>.*) (?P<Action>till|från)
