@@ -58,7 +58,7 @@ class HomeAssistantSkill(FallbackSkill):
                 )
                 if conversation_activated:
                     self.enable_fallback = \
-                        self.settings.get('enable_fallback') == 'true'
+                        self.settings.get('enable_fallback')
 
     def _force_setup(self):
         LOGGER.debug('Creating a new HomeAssistant-Client')

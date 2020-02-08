@@ -1,6 +1,4 @@
 {
-  "identifier": "HomeAssistantSkill",
-  "name": "HomeAssistant",
   "skillMetadata": {
       "sections": [
           {
