@@ -84,7 +84,7 @@ class HomeAssistantSkill(FallbackSkill):
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
-        self.settings.set_changed_callback(self.on_websettings_changed)
+        self.settings_change_callback = self.on_websettings_changed
         self._setup()
 
     def on_websettings_changed(self):
