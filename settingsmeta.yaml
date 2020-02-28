@@ -1,4 +1,3 @@
-name: Home Assistant
 skillMetadata:
   sections:
   - name: Login
@@ -20,12 +19,12 @@ skillMetadata:
     - name: ssl
       type: checkbox
       label: Use SSL
-      value: False
+      value: "False"
     - name: verify
       type: checkbox
       label: Verify SSL Certificate
-      value: True
+      value: "True"
     - name: enable_fallback
       type: checkbox
       label: Enable conversation component as fallback
-      value: True
+      value: "True"
