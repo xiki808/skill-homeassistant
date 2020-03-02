@@ -1,5 +1,5 @@
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import FallbackSkill, intent_handler
+from mycroft.skills.core import FallbackSkill
 from mycroft.util.log import getLogger
 from mycroft.util.format import nice_number
 from mycroft import MycroftSkill, intent_file_handler
@@ -58,7 +58,7 @@ class HomeAssistantSkill(FallbackSkill):
                 )
                 if conversation_activated:
                     self.enable_fallback = \
-                        self.settings.get('enable_fallback') == 'true'
+                        self.settings.get('enable_fallback')
 
     def _force_setup(self):
         LOGGER.debug('Creating a new HomeAssistant-Client')
@@ -152,7 +152,7 @@ class HomeAssistantSkill(FallbackSkill):
                 self.speak_dialog('homeassistant.error.needurl')
             else:
                 self.speak_dialog('homeassistant.error.invalidurl', data={
-                'url': e.request.url})
+                                  'url': e.request.url})
         except SSLError:
             self.speak_dialog('homeassistant.error.ssl')
         except HTTPError as e:
