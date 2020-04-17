@@ -171,6 +171,7 @@ class HomeAssistantSkill(FallbackSkill):
             # TODO find a nice member of any exception to output
             self.speak_dialog('homeassistant.error', data={
                     'url': exception.request.url})
+
         return False
 
     def handle_switch_intent(self, message):
