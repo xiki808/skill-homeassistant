@@ -81,10 +81,6 @@ class HomeAssistantSkill(FallbackSkill):
             'set.light.brightness.intent',
             self.handle_light_set_intent
         )
-        # self.register_intent_file(
-        #     'add.item.shopping.list.intent',
-        #     self.handle_shopping_list_intent
-        # )
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
