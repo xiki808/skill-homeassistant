@@ -263,13 +263,9 @@ class HomeAssistantSkill(FallbackSkill):
         entity = message.data["entity"]
         ha_data = {'name': entity}
         self.ha.execute_service("shopping_list", "add_item", ha_data)
-        self.speak_dialog('homeassistant.shopping.list.dialog')
+        self.speak_dialog('homeassistant.shopping.list.added')
 
-    # url = 'https://alfred.pfire.cloud/api/services/shopping_list/add_item'
-    # data = '{'name': entity}
-    # response = post(url, headers=headers, data=data)
-    # ADD: api call to home assistant
-    # ADD: dialog confirmation
+        return
 
     def handle_light_adjust_intent(self, message):
         entity = message.data["Entity"]
