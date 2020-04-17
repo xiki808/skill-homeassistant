@@ -81,6 +81,10 @@ class HomeAssistantSkill(FallbackSkill):
             'set.light.brightness.intent',
             self.handle_light_set_intent
         )
+        self.register_intent_file(
+            'add.item.shopping.list.intent',
+            self.handle_shopping_list_intent
+        )
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
@@ -253,6 +257,19 @@ class HomeAssistantSkill(FallbackSkill):
                           data=ha_data)
 
         return
+
+    @intent_file_handler('add.item.shopping.list.intent')
+    def handle_shopping_list_intent(self, message):
+        entity = message.data["entity"]
+        ha_data = {'name': entity}
+        self.ha.execute_service("shopping_list", "add_item", ha_data)
+        self.speak_dialog('homeassistant.shopping.list.dialog')
+
+    # url = 'https://alfred.pfire.cloud/api/services/shopping_list/add_item'
+    # data = '{'name': entity}
+    # response = post(url, headers=headers, data=data)
+    # ADD: api call to home assistant
+    # ADD: dialog confirmation
 
     def handle_light_adjust_intent(self, message):
         entity = message.data["Entity"]
