@@ -9,7 +9,7 @@ __author__ = 'btotharye'
 # Timeout time for HA requests
 TIMEOUT = 10
 
-# eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhNzlkYTkxNjBlMGQ0MzZjYjk5ZGFkM2IyYmFjZmU2ZiIsImlhdCI6MTU4Njk3OTkzMSwiZXhwIjoxOTAyMzM5OTMxfQ.cOtoFydBZZziVIz6KVSliqCstV_NI8rO1ukWa61qOK8
+
 class HomeAssistantClient(object):
 
     def __init__(self, host, token, portnum, ssl=False, verify=True):
