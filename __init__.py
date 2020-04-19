@@ -77,6 +77,9 @@ class HomeAssistantSkill(FallbackSkill):
             'set.climate.intent',
             self.handle_set_thermostat_intent
         )
+        self.register_intent_file('turn.on.intent', self.handle_turn_on_intent)
+        self.register_intent_file('turn.off.intent', self.handle_turn_off_intent)
+        self.register_intent_file('toggle.intent', self.handle_toggle_intent)
         self.register_intent_file(
             'set.light.brightness.intent',
             self.handle_light_set_intent
@@ -168,6 +171,25 @@ class HomeAssistantSkill(FallbackSkill):
             self.speak_dialog('homeassistant.error', data={
                     'url': exception.request.url})
         return False
+
+    def handle_turn_on_intent(self, message):
+        LOGGER.debug("Turn on intent on entity: "+message.data.get("entity"))
+        message.data["Entity"] = message.data.get("entity")
+        message.data["Action"] = "on"
+        self.handle_switch_intent(message)
+
+    def handle_turn_off_intent(self, message):
+        LOGGER.debug(message.data)
+        LOGGER.debug("Turn off intent on entity: "+message.data.get("entity"))
+        message.data["Entity"] = message.data.get("entity")
+        message.data["Action"] = "off"
+        self.handle_switch_intent(message)
+
+    def handle_toggle_intent(self, message):
+        LOGGER.debug("Toggle intent on entity: " + message.data.get("entity"))
+        message.data["Entity"] = message.data.get("entity")
+        message.data["Action"] = "toggle"
+        self.handle_switch_intent(message)
 
     def handle_switch_intent(self, message):
         LOGGER.debug("Starting Switch Intent")
