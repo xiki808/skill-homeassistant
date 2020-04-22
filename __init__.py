@@ -378,7 +378,7 @@ class HomeAssistantSkill(FallbackSkill):
             self.ha.execute_service("homeassistant", "turn_on",
                                     data=ha_data)
 
-    def handle_sensor(self, message):
+    def _handle_sensor(self, message):
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
 
