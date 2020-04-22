@@ -68,22 +68,24 @@ class HomeAssistantSkill(FallbackSkill):
         self.language = self.config_core.get('lang')
         self.load_vocab_files(join(dirname(__file__), 'vocab', self.lang))
         self.load_regex_files(join(dirname(__file__), 'regex', self.lang))
-        self.__build_switch_intent()
         self.__build_light_adjust_intent()
         self.__build_automation_intent()
-        self.__build_sensor_intent()
         self.__build_tracker_intent()
         self.register_intent_file(
             'set.climate.intent',
             self.handle_set_thermostat_intent
         )
+        #Working
         self.register_intent_file('turn.on.intent', self.handle_turn_on_intent)
         self.register_intent_file('turn.off.intent', self.handle_turn_off_intent)
         self.register_intent_file('toggle.intent', self.handle_toggle_intent)
+        self.register_intent_file('sensor.intent', self.handle_sensor_intent)
+        #TODO: will be tested
         self.register_intent_file(
             'set.light.brightness.intent',
             self.handle_light_set_intent
         )
+        
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
@@ -94,11 +96,6 @@ class HomeAssistantSkill(FallbackSkill):
         # Force a setting refresh after the websettings changed
         # Otherwise new settings will not be regarded
         self._force_setup()
-
-    def __build_switch_intent(self):
-        intent = IntentBuilder("switchIntent").require(
-            "SwitchActionKeyword").require("Action").require("Entity").build()
-        self.register_intent(intent, self.handle_switch_intent)
 
     def __build_light_adjust_intent(self):
         intent = IntentBuilder("LightAdjBrightnessIntent") \
@@ -112,12 +109,6 @@ class HomeAssistantSkill(FallbackSkill):
         intent = IntentBuilder("AutomationIntent").require(
             "AutomationActionKeyword").require("Entity").build()
         self.register_intent(intent, self.handle_automation_intent)
-
-    def __build_sensor_intent(self):
-        intent = IntentBuilder("SensorIntent").require(
-            "SensorStatusKeyword").require("Entity").build()
-        # TODO - Sensors - Locks, Temperature, etc
-        self.register_intent(intent, self.handle_sensor_intent)
 
     def __build_tracker_intent(self):
         intent = IntentBuilder("TrackerIntent").require(
@@ -172,26 +163,32 @@ class HomeAssistantSkill(FallbackSkill):
                     'url': exception.request.url})
         return False
 
+    # Intent handlers
     def handle_turn_on_intent(self, message):
         LOGGER.debug("Turn on intent on entity: "+message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "on"
-        self.handle_switch_intent(message)
+        self.handle_switch(message)
 
     def handle_turn_off_intent(self, message):
         LOGGER.debug(message.data)
         LOGGER.debug("Turn off intent on entity: "+message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "off"
-        self.handle_switch_intent(message)
+        self.handle_switch(message)
 
     def handle_toggle_intent(self, message):
         LOGGER.debug("Toggle intent on entity: " + message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "toggle"
-        self.handle_switch_intent(message)
+        self.handle_switch(message)
 
-    def handle_switch_intent(self, message):
+    def handle_sensor_intent(self, message):
+        LOGGER.debug("Turn on intent on entity: "+message.data.get("entity"))
+        message.data["Entity"] = message.data.get("entity")
+        self.handle_sensor(message)
+
+    def handle_switch(self, message):
         LOGGER.debug("Starting Switch Intent")
         entity = message.data["Entity"]
         action = message.data["Action"]
@@ -217,12 +214,6 @@ class HomeAssistantSkill(FallbackSkill):
 
         # IDEA: set context for 'turn it off' again or similar
         # self.set_context('Entity', ha_entity['dev_name'])
-
-        if self.language == 'de':
-            if action == 'ein':
-                action = 'on'
-            elif action == 'aus':
-                action = 'off'
         if ha_entity['state'] == action:
             LOGGER.debug("Entity in requested state")
             self.speak_dialog('homeassistant.device.already', data={
@@ -385,7 +376,7 @@ class HomeAssistantSkill(FallbackSkill):
             self.ha.execute_service("homeassistant", "turn_on",
                                     data=ha_data)
 
-    def handle_sensor_intent(self, message):
+    def handle_sensor(self, message):
         entity = message.data["Entity"]
         LOGGER.debug("Entity: %s" % entity)
 
@@ -406,7 +397,7 @@ class HomeAssistantSkill(FallbackSkill):
         # extract unit for correct pronounciation
         # this is fully optional
         try:
-            from quantulum import parser
+            from quantulum3 import parser
             quantulumImport = True
         except ImportError:
             quantulumImport = False
