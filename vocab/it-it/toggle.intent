@@ -1,5 +1,5 @@
-commuta {Entity}
-per favore commuta {Entity}
-vorrei commutare {Entity}
-vorrei {Entity} commutata
-mi piacerebbe commutare {Entity}
+commuta (la|il|lo|) (la luce|l'interruttore|) (di|del|della|dello|) {Entity}
+per favore commuta (la|il|lo|) (la luce|l'interruttore|) (di|del|della|dello|) {Entity}
+vorrei commutare (la|il|lo|) (la luce|l'interruttore|) (di|del|della|dello|) {Entity}
+vorrei (la|il|lo|) (la luce|l'interruttore|) (di|del|della|dello|) {Entity} commutata
+mi piacerebbe commutare (la|il|lo|) (la luce|l'interruttore|) (di|del|della|dello|) {Entity}
