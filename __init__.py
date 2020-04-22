@@ -80,12 +80,9 @@ class HomeAssistantSkill(FallbackSkill):
         self.register_intent_file('turn.off.intent', self.handle_turn_off_intent)
         self.register_intent_file('toggle.intent', self.handle_toggle_intent)
         self.register_intent_file('sensor.intent', self.handle_sensor_intent)
-        #TODO: will be tested
-        self.register_intent_file(
-            'set.light.brightness.intent',
-            self.handle_light_set_intent
-        )
-        
+        self.register_intent_file('set.light.brightness.intent',
+            self.handle_light_set_intent)
+
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
@@ -188,6 +185,13 @@ class HomeAssistantSkill(FallbackSkill):
         message.data["Entity"] = message.data.get("entity")
         self.handle_sensor(message)
 
+    def handle_light_set_intent(self, message):
+        LOGGER.debug("Change light intensity: "+message.data.get("entity") \
+            +"to"+message.data.get("brightnessvalue")+"percent")
+        message.data["Entity"] = message.data.get("entity")
+        message.data["Brightnessvalue"] = message.data.get("brightnessvalue")
+        self.handle_light_set(message)
+
     def handle_switch(self, message):
         LOGGER.debug("Starting Switch Intent")
         entity = message.data["Entity"]
@@ -236,11 +240,10 @@ class HomeAssistantSkill(FallbackSkill):
             self.speak_dialog('homeassistant.error.sorry')
             return
 
-    @intent_file_handler('set.light.brightness.intent')
-    def handle_light_set_intent(self, message):
+    def handle_light_set(self, message):
         entity = message.data["entity"]
         try:
-            brightness_req = float(message.data["brightnessvalue"])
+            brightness_req = float(message.data["Brightnessvalue"])
             if brightness_req > 100 or brightness_req < 0:
                 self.speak_dialog('homeassistant.brightness.badreq')
         except KeyError:
@@ -258,10 +261,12 @@ class HomeAssistantSkill(FallbackSkill):
 
         # IDEA: set context for 'turn it off again' or similar
         # self.set_context('Entity', ha_entity['dev_name'])
-
+        # Set values for HA
         ha_data['brightness'] = brightness_value
+        self.ha.execute_service("light", "turn_on", ha_data)
+        # Set values for mycroft reply
         ha_data['dev_name'] = ha_entity['dev_name']
-        self.ha.execute_service("homeassistant", "turn_on", ha_data)
+        ha_data['brightness'] = brightness_req
         self.speak_dialog('homeassistant.brightness.dimmed',
                           data=ha_data)
 
