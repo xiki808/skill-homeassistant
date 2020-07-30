@@ -267,6 +267,12 @@ class HomeAssistantSkill(FallbackSkill):
         LOGGER.debug("Entity: %s" % entity)
         LOGGER.debug("Brightness Value: %s" % brightness_value)
 
+        # Set the min and max brightness for bulbs. Smart bulbs
+        # use 0-255 integer brightness, while spoken commands will
+        # use 0-100% brightness.
+        min_brightness = 5
+        max_brightness = 255
+
         ha_entity = self._find_entity(entity, ['group', 'light'])
         if not ha_entity:
             return
@@ -292,15 +298,14 @@ class HomeAssistantSkill(FallbackSkill):
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
                 else:
-                    ha_data['brightness'] = light_attrs['unit_measure']
-                    if ha_data['brightness'] < brightness_value:
-                        ha_data['brightness'] = 10
-                    else:
-                        ha_data['brightness'] -= brightness_value
+                    ha_data['brightness'] = light_attrs['unit_measure'] - brightness_value
+                    if ha_data['brightness'] < min_brightness:
+                        ha_data['brightness'] = min_brightness
                     self.ha.execute_service("homeassistant",
                                             "turn_on",
                                             ha_data)
                     ha_data['dev_name'] = ha_entity['dev_name']
+                    ha_data['brightness'] = round(100 / max_brightness * ha_data['brightness'])
                     self.speak_dialog('homeassistant.brightness.decreased',
                                       data=ha_data)
         elif "IncreaseVerb" in message.data or \
@@ -316,15 +321,14 @@ class HomeAssistantSkill(FallbackSkill):
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
                 else:
-                    ha_data['brightness'] = light_attrs['unit_measure']
-                    if ha_data['brightness'] > brightness_value:
-                        ha_data['brightness'] = 255
-                    else:
-                        ha_data['brightness'] += brightness_value
+                    ha_data['brightness'] = light_attrs['unit_measure'] + brightness_value
+                    if ha_data['brightness'] > max_brightness:
+                        ha_data['brightness'] = max_brightness
                     self.ha.execute_service("homeassistant",
                                             "turn_on",
                                             ha_data)
                     ha_data['dev_name'] = ha_entity['dev_name']
+                    ha_data['brightness'] = round(100 / max_brightness * ha_data['brightness'])
                     self.speak_dialog('homeassistant.brightness.increased',
                                       data=ha_data)
         else:
