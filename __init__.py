@@ -167,6 +167,7 @@ class HomeAssistantSkill(FallbackSkill):
             # TODO find a nice member of any exception to output
             self.speak_dialog('homeassistant.error', data={
                     'url': exception.request.url})
+
         return False
 
     def handle_switch_intent(self, message):
@@ -252,6 +253,14 @@ class HomeAssistantSkill(FallbackSkill):
         self.speak_dialog('homeassistant.brightness.dimmed',
                           data=ha_data)
 
+        return
+
+    @intent_file_handler('add.item.shopping.list.intent')
+    def handle_shopping_list_intent(self, message):
+        entity = message.data["entity"]
+        ha_data = {'name': entity}
+        self.ha.execute_service("shopping_list", "add_item", ha_data)
+        self.speak_dialog("homeassistant.shopping.list")
         return
 
     def handle_light_adjust_intent(self, message):
