@@ -34,6 +34,12 @@ class HomeAssistantSkill(FallbackSkill):
 
     def _setup(self, force=False):
         if self.settings is not None and (force or self.ha is None):
+            ip = self.settings.get('host')
+            token = self.settings.get('token')
+            # Check if user filled IP and Token in configuration
+            if not ip or not token:
+                self.speak_dialog('homeassistant.error.setup')
+                return
             portnumber = self.settings.get('portnum')
             try:
                 portnumber = int(portnumber)
@@ -43,8 +49,8 @@ class HomeAssistantSkill(FallbackSkill):
                 # String might be some rubbish (like '')
                 portnumber = 0
             self.ha = HomeAssistantClient(
-                self.settings.get('host'),
-                self.settings.get('token'),
+                ip,
+                token,
                 portnumber,
                 self.settings.get('ssl'),
                 self.settings.get('verify')
