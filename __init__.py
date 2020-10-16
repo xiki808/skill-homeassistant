@@ -152,16 +152,57 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
 
     def initialize(self):
         self.settings_change_callback = self.on_websettings_changed
-        self._setup()
-        self._entities = self._build_entities_map(self._client.entities())
-        self._scenes = self._build_scenes_map(self._client.entities())
-        self._brightness_step = self.settings.get("brightness_step", 20)
-        self._temperature_step = self.settings.get("temperature_step", 20)
-        self.register_entities_and_scenes()
-
+        self.on_websettings_changed()
+        # TODO: If a user toggles this setting off, it will not de-register 
+        # the fallback. Should be moved to on_websettings_changed()
         # Needs higher priority than general fallback skills
         if self.settings.get('enable_fallback'):
             self.register_fallback(self.handle_fallback, 2)
+
+    def on_websettings_changed(self):
+        # Force a setting refresh after the websettings changed
+        # Otherwise new settings will not be regarded
+        self._brightness_step = self.settings.get("brightness_step")
+        self._temperature_step = self.settings.get("temperature_step")
+        self._create_client()
+
+    def _create_client(self):
+        """Create the Home Assistant Client from Skill settings.
+        
+        :param None
+        :return None
+        """
+        host = self.settings.get('host')
+        token = self.settings.get('token')
+        if not host: 
+            # Assume settings haven't been entered.
+            return
+        if not token:
+            # Ensure access token exists if other settings have been entered
+            self.speak_dialog('error.no.token')
+            return
+        try:
+            # Ensure port number is an integer. Default value assumed.
+            port_number = int(self.settings.get('portnum'))
+        except TypeError:
+            self.speak_dialog('error.parsing.number',
+                              {'port_number': port_number})
+            return
+
+        try:
+            self._client = HomeAssistantClient(
+                token=token,
+                hostname=host,
+                port=port_number,
+                ssl=self.settings.get('ssl'),
+                verify=self.settings.get('verify')
+            )
+        except ConnectionError:
+            self.speak_dialog('error.connection')
+
+        self._entities = self._build_entities_map(self._client.entities())
+        self._scenes = self._build_scenes_map(self._client.entities())
+        self.register_entities_and_scenes()
 
     def _build_entities_map(self, entities: dict):
         results = defaultdict(list)
@@ -182,25 +223,6 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
             if self._domain(id) == _SCENE:
                 results[name] = id
         return results
-
-    def on_websettings_changed(self):
-        # Force a setting refresh after the websettings changed
-        # Otherwise new settings will not be regarded
-        self._force_setup()
-
-    def _setup(self):
-        portnumber = int(self.settings.get('portnum', 8123))
-        self._client = HomeAssistantClient(
-            token=self.settings.get('token'),
-            hostname=self.settings.get('host', 'localhost'),
-            port=portnumber,
-            ssl=self.settings.get('ssl', False),
-            verify=self.settings.get('verify', True)
-        )
-
-    def _force_setup(self):
-        LOGGER.debug('Creating a new HomeAssistant-Client')
-        self._setup()
 
     def _domain(self, entity_id: str):
         if entity_id is None:
