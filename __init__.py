@@ -151,7 +151,7 @@ class HomeAssistantSkill(CommonIoTSkill, FallbackSkill):
         self._scenes = dict()
 
     def initialize(self):
-        self.settings.set_changed_callback(self.on_websettings_changed)
+        self.settings_change_callback = self.on_websettings_changed
         self._setup()
         self._entities = self._build_entities_map(self._client.entities())
         self._scenes = self._build_scenes_map(self._client.entities())
