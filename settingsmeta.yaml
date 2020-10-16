@@ -24,17 +24,17 @@ skillMetadata:
         - label: Use SSL
           name: ssl
           type: checkbox
-          value: false
+          value: "false"
 
         - label: Verify SSL Certificate
           name: verify
           type: checkbox
-          value: true
+          value: "true"
 
         - label: Enable conversation component as fallback
           name: enable_fallback
           type: checkbox
-          value: true
+          value: "true"
 
         - name: brightness_step_label
           type: label
