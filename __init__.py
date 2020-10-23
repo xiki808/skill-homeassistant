@@ -1,7 +1,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import FallbackSkill
 from mycroft.util.format import nice_number
-from mycroft import MycroftSkill, intent_file_handler
+from mycroft import MycroftSkill, intent_handler
 from os.path import dirname, join
 
 from requests.exceptions import (
@@ -270,7 +270,7 @@ class HomeAssistantSkill(FallbackSkill):
 
         return
 
-    @intent_file_handler('add.item.shopping.list.intent')
+    @intent_handler('add.item.shopping.list.intent')
     def handle_shopping_list_intent(self, message):
         entity = message.data["entity"]
         ha_data = {'name': entity}
@@ -453,7 +453,7 @@ class HomeAssistantSkill(FallbackSkill):
                           data={'dev_name': dev_name,
                                 'location': dev_location})
 
-    @intent_file_handler('set.climate.intent')
+    @intent_handler('set.climate.intent')
     def handle_set_thermostat_intent(self, message):
         entity = message.data["entity"]
         self.log.debug("Entity: %s" % entity)
