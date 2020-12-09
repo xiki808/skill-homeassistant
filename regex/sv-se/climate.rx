@@ -1,1 +1,1 @@
-sätt termostaten (?P<Entity>.*) till (?P<temp>[0-9]*)
+(ställ in) (?P<Entity>.*) termostat till (?P<temp>[0-9]*)
