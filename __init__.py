@@ -3,6 +3,7 @@ from mycroft.skills.core import FallbackSkill
 from mycroft.util.format import nice_number
 from mycroft import MycroftSkill, intent_handler
 from os.path import dirname, join
+from sys import exc_info
 
 from requests.exceptions import (
     RequestException,
@@ -85,7 +86,7 @@ class HomeAssistantSkill(FallbackSkill):
         self.load_regex_files(join(dirname(__file__), 'regex', self.lang))
         self.__build_automation_intent()
         self.__build_tracker_intent()
-        
+
         # Needs higher priority than general fallback skills
         self.register_fallback(self.handle_fallback, 2)
         # Check and then monitor for credential changes
@@ -162,7 +163,7 @@ class HomeAssistantSkill(FallbackSkill):
         self.log.debug("Turn on intent on entity: "+message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "on"
-        self._handle_switch(message)
+        self._handle_turn_actions(message)
 
     @intent_handler('turn.off.intent')
     def handle_turn_off_intent(self, message):
@@ -170,14 +171,14 @@ class HomeAssistantSkill(FallbackSkill):
         self.log.debug("Turn off intent on entity: "+message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "off"
-        self._handle_switch(message)
+        self._handle_turn_actions(message)
 
     @intent_handler('toggle.intent')
     def handle_toggle_intent(self, message):
         self.log.debug("Toggle intent on entity: " + message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "toggle"
-        self._handle_switch(message)
+        self._handle_turn_actions(message)
 
     @intent_handler('sensor.intent')
     def handle_sensor_intent(self, message):
@@ -207,12 +208,36 @@ class HomeAssistantSkill(FallbackSkill):
         message.data["Action"] = "down"
         self._handle_light_adjust(message)
 
-    def _handle_switch(self, message):
+    def _handle_turn_actions(self, message):
         self.log.debug("Starting Switch Intent")
         entity = message.data["Entity"]
         action = message.data["Action"]
         self.log.debug("Entity: %s" % entity)
         self.log.debug("Action: %s" % action)
+
+        # Handle turn on/off all intent
+        try:
+            if self.voc_match(entity,"all_lights"):
+                domain = "light"
+            elif self.voc_match(entity,"all_switches"):
+                domain = "switch"
+            else:
+                domain = None
+
+            if domain is not None:
+                ha_entity = {'dev_name': entity}
+                ha_data = {'entity_id': 'all'}
+
+                self.ha.execute_service(domain, "turn_%s" % action, ha_data)
+                self.speak_dialog('homeassistant.device.%s' % action, data=ha_entity)
+                return
+        # TODO: need to figure out, if this indeed throws a KeyError
+        except KeyError:
+            self.log.debug("Not turn on/off all intent")
+        except:
+            self.log.debug("Unexpected error in turn all intent:", exc_info()[0])
+
+        # Hande single entity
 
         ha_entity = self._find_entity(
             entity,
