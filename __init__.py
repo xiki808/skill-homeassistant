@@ -111,10 +111,15 @@ class HomeAssistantSkill(FallbackSkill):
 
     # Routine for entiti availibility check
     def _check_availability(self, ha_entity):
-        self.log.debug(ha_entity['state'])
+        """ Simple routine for checking availability of entity inside
+        Home Assistent. """
+
         if ha_entity['state'] == 'unavailable':
+            """ Check if state is `unavailable`, if yes, inform user about it. """
+
             self.speak_dialog('homeassistant.device.unavailable', data={
                             "dev_name": ha_entity['dev_name']})
+       """ Return result to underliing function. """
             return False
         return True
 
