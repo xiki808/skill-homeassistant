@@ -1,7 +1,7 @@
 from adapt.intent import IntentBuilder
 from mycroft.skills.core import FallbackSkill
 from mycroft.util.format import nice_number
-from mycroft import MycroftSkill, intent_file_handler
+from mycroft import MycroftSkill, intent_file_handler, intent_handler
 from os.path import dirname, join
 
 from requests.exceptions import (
@@ -119,7 +119,7 @@ class HomeAssistantSkill(FallbackSkill):
 
             self.speak_dialog('homeassistant.device.unavailable', data={
                             "dev_name": ha_entity['dev_name']})
-       """ Return result to underliing function. """
+            """ Return result to underliing function. """
             return False
         return True
 
