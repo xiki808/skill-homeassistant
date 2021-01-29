@@ -1,4 +1,4 @@
-(quel|quelle) est (l'état|le statut|la valeur) de (?P<Entity>.*)
+(dans)?(quel|quelle) est (l'état|le statut|la valeur) de (?P<Entity>.*)
 (quelle|quel) est (le|la|l')?(état|statut|valeur) de ?(?P<Entity>.*)
 (dis|donne) moi (le|la|l')?(statut|état|valeur) de ?(?P<Entity>.*)
 lis (à haute voix )?(le|la|l' )?(statut|état|valeur) (de )?(?P<Entity>.*)
