@@ -40,12 +40,12 @@ class HomeAssistantSkill(FallbackSkill):
             # Check if user filled IP, port and Token in configuration
             if not ip:
                 self.speak_dialog('homeassistant.error.setup', data={
-                              "field": "I.P."})
+                    "field": "I.P."})
                 return
 
             if not token:
                 self.speak_dialog('homeassistant.error.setup', data={
-                              "field": "token"})
+                    "field": "token"})
                 return
 
             portnumber = self.settings.get('portnum')
@@ -56,7 +56,7 @@ class HomeAssistantSkill(FallbackSkill):
             except ValueError:
                 # String might be some rubbish (like '')
                 self.speak_dialog('homeassistant.error.setup', data={
-                              "field": "port"})
+                    "field": "port"})
                 return
 
             self.ha = HomeAssistantClient(
@@ -137,7 +137,7 @@ class HomeAssistantSkill(FallbackSkill):
             """ Check if state is `unavailable`, if yes, inform user about it. """
 
             self.speak_dialog('homeassistant.device.unavailable', data={
-                            "dev_name": ha_entity['dev_name']})
+                "dev_name": ha_entity['dev_name']})
             """ Return result to underliing function. """
             return False
         return True
@@ -168,7 +168,7 @@ class HomeAssistantSkill(FallbackSkill):
         except (ConnectionError, RequestException) as exception:
             # TODO find a nice member of any exception to output
             self.speak_dialog('homeassistant.error', data={
-                    'url': exception.request.url})
+                'url': exception.request.url})
 
         return False
 
@@ -183,14 +183,16 @@ class HomeAssistantSkill(FallbackSkill):
     @intent_handler('turn.off.intent')
     def handle_turn_off_intent(self, message):
         self.log.debug(message.data)
-        self.log.debug("Turn off intent on entity: "+message.data.get("entity"))
+        self.log.debug("Turn off intent on entity: " +
+                       message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "off"
         self._handle_turn_actions(message)
 
     @intent_handler('toggle.intent')
     def handle_toggle_intent(self, message):
-        self.log.debug("Toggle intent on entity: " + message.data.get("entity"))
+        self.log.debug("Toggle intent on entity: " +
+                       message.data.get("entity"))
         message.data["Entity"] = message.data.get("entity")
         message.data["Action"] = "toggle"
         self._handle_turn_actions(message)
@@ -203,8 +205,8 @@ class HomeAssistantSkill(FallbackSkill):
 
     @intent_handler('set.light.brightness.intent')
     def handle_light_set_intent(self, message):
-        self.log.debug("Change light intensity: "+message.data.get("entity") \
-            +"to"+message.data.get("brightnessvalue")+"percent")
+        self.log.debug("Change light intensity: "+message.data.get("entity")
+                       + "to"+message.data.get("brightnessvalue")+"percent")
         message.data["Entity"] = message.data.get("entity")
         message.data["Brightnessvalue"] = message.data.get("brightnessvalue")
         self._handle_light_set(message)
@@ -232,9 +234,9 @@ class HomeAssistantSkill(FallbackSkill):
 
         # Handle turn on/off all intent
         try:
-            if self.voc_match(entity,"all_lights"):
+            if self.voc_match(entity, "all_lights"):
                 domain = "light"
-            elif self.voc_match(entity,"all_switches"):
+            elif self.voc_match(entity, "all_switches"):
                 domain = "switch"
             else:
                 domain = None
@@ -244,13 +246,15 @@ class HomeAssistantSkill(FallbackSkill):
                 ha_data = {'entity_id': 'all'}
 
                 self.ha.execute_service(domain, "turn_%s" % action, ha_data)
-                self.speak_dialog('homeassistant.device.%s' % action, data=ha_entity)
+                self.speak_dialog('homeassistant.device.%s' %
+                                  action, data=ha_entity)
                 return
         # TODO: need to figure out, if this indeed throws a KeyError
         except KeyError:
             self.log.debug("Not turn on/off all intent")
         except:
-            self.log.debug("Unexpected error in turn all intent:", exc_info()[0])
+            self.log.debug(
+                "Unexpected error in turn all intent:", exc_info()[0])
 
         # Hande single entity
 
@@ -375,14 +379,16 @@ class HomeAssistantSkill(FallbackSkill):
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
                 else:
-                    ha_data['brightness'] = light_attrs['unit_measure'] - brightness_value
+                    ha_data['brightness'] = light_attrs['unit_measure'] - \
+                        brightness_value
                     if ha_data['brightness'] < min_brightness:
                         ha_data['brightness'] = min_brightness
                     self.ha.execute_service("homeassistant",
                                             "turn_on",
                                             ha_data)
                     ha_data['dev_name'] = ha_entity['dev_name']
-                    ha_data['brightness'] = round(100 / max_brightness * ha_data['brightness'])
+                    ha_data['brightness'] = round(
+                        100 / max_brightness * ha_data['brightness'])
                     self.speak_dialog('homeassistant.brightness.decreased',
                                       data=ha_data)
         elif action == "up":
@@ -397,14 +403,16 @@ class HomeAssistantSkill(FallbackSkill):
                         'homeassistant.brightness.cantdim.dimmable',
                         data=ha_entity)
                 else:
-                    ha_data['brightness'] = light_attrs['unit_measure'] + brightness_value
+                    ha_data['brightness'] = light_attrs['unit_measure'] + \
+                        brightness_value
                     if ha_data['brightness'] > max_brightness:
                         ha_data['brightness'] = max_brightness
                     self.ha.execute_service("homeassistant",
                                             "turn_on",
                                             ha_data)
                     ha_data['dev_name'] = ha_entity['dev_name']
-                    ha_data['brightness'] = round(100 / max_brightness * ha_data['brightness'])
+                    ha_data['brightness'] = round(
+                        100 / max_brightness * ha_data['brightness'])
                     self.speak_dialog('homeassistant.brightness.increased',
                                       data=ha_data)
         else:
