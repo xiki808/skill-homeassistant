@@ -1,0 +1,2 @@
+change (color (of|) |) {{entity}} to {{color}}
+change {{entity}} (color|) to {{color}}

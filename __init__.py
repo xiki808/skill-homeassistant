@@ -223,6 +223,49 @@ class HomeAssistantSkill(FallbackSkill):
         message.data["Action"] = "down"
         self._handle_light_adjust(message)
 
+    @intent_handler('change.light.color.intent')
+    def handle_light_color_intent(self, message):
+        self.log.debug("Change light colour intent on entity: " +
+                       message.data['entity'])
+        self._handle_light_color(message)
+
+    def _handle_light_color(self, message):
+        self.log.debug("Starting change colour intent.")
+        self.log.debug("Entity: %s" % message.data["entity"])
+        self.log.debug("Color: %s" % message.data["color"])
+
+        entity = message.data['entity']
+        entity_parts = entity.split()
+        voc_match = entity
+
+        # In case the utterance is for all entities
+        if "all" in entity_parts:
+            voc_match = "all lights"
+
+        if self.voc_match(voc_match, "all_lights"):
+            ha_data = {'entity_id': 'all'}
+            ha_entity = {'dev_name': 'all lights'}
+        else:
+            ha_entity = self._find_entity(entity, ['group', 'light'])
+
+            if not ha_entity or not self._check_availability(ha_entity):
+                return
+
+            ha_data = {'entity_id': ha_entity['id']}
+
+        color = message.data['color']
+        color_parts = list(color.split())
+
+        # HA uses one color words, such as: lightgoldenrodyellow
+        if len(color_parts) > 1:
+            color = ''.join(color_parts)
+
+        ha_data['color_name'] = message.data['color']
+        self.ha.execute_service("light", "turn_on", ha_data)
+
+        ha_data['dev_name'] = ha_entity['dev_name']
+        self.speak_dialog('homeassistant.color.change', data=ha_data)
+
     def _handle_turn_actions(self, message):
         self.log.debug("Starting Switch Intent")
         entity = message.data["Entity"]
