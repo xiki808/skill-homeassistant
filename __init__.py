@@ -225,6 +225,11 @@ class HomeAssistantSkill(FallbackSkill):
 
     @intent_handler('change.light.color.intent')
     def handle_light_color_intent(self, message):
+        if not 'entity' in message.data:
+            self.speak_dialog('homeassistant.device.not.given',
+                              data={"action": "change"})
+            return
+            
         self.log.debug("Change light colour intent on entity: " +
                        message.data['entity'])
         self._handle_light_color(message)
