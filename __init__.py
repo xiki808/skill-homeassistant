@@ -256,10 +256,6 @@ class HomeAssistantSkill(FallbackSkill):
         color = message.data['color']
         color_parts = list(color.split())
 
-        # HA uses one color words, such as: lightgoldenrodyellow
-        if len(color_parts) > 1:
-            color = ''.join(color_parts)
-
         ha_data['color_name'] = message.data['color']
         self.ha.execute_service("light", "turn_on", ha_data)
 
